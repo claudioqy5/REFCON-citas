@@ -132,17 +132,37 @@ namespace Backend.Controllers
                     h.MensajeID,
                     h.PeticionID,
                     PacienteNombre = h.Paciente.NombreCompleto,
+                    PacienteDni = h.Paciente.Dni,
                     PacienteCelular = h.Paciente.Celular,
                     h.IdCita,
                     h.Especialidad,
                     h.FechaCita,
                     h.FechaHoraEnvio,
                     h.EstadoEnvio,
-                    h.CuerpoMensaje
+                    h.CuerpoMensaje,
+                    h.EstablecimientoDestino
                 })
                 .ToListAsync();
 
             return Ok(historial);
+        }
+
+        [HttpGet("patients")]
+        public async Task<IActionResult> GetPatients()
+        {
+            int establecimientoId = GetEstablecimientoID();
+            var patients = await _context.Pacientes
+                .Where(p => p.EstablecimientoID == establecimientoId)
+                .Select(p => new
+                {
+                    p.PacienteID,
+                    p.Dni,
+                    p.NombreCompleto,
+                    p.Celular
+                })
+                .ToListAsync();
+
+            return Ok(patients);
         }
     }
 }

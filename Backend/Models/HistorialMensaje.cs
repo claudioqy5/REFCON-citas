@@ -18,6 +18,7 @@ namespace Backend.Models
         public DateTime? FechaHoraEnvio { get; set; }
         public string CuerpoMensaje { get; set; } = null!;
         public string EstadoEnvio { get; set; } = "Enviado";
+        public string? EstablecimientoDestino { get; set; }
 
         [ForeignKey("PeticionID")]
         public virtual PeticionEnvio PeticionEnvio { get; set; } = null!;

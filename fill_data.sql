@@ -70,15 +70,15 @@ GO
 
 -- 6. INSERTAR HISTORIAL DE MENSAJES ENVIADOS (Alineado con HistorialMensajes)
 -- Mensajes para Clínica Dental (EstablecimientoID = 2, PeticionID = 1, PacienteID = 1, 2, 3)
-INSERT INTO HistorialMensajes (PeticionID, EstablecimientoID, PacienteID, IdCita, IdReferencia, Especialidad, FechaCita, FechaHoraEnvio, CuerpoMensaje, EstadoEnvio)
+INSERT INTO HistorialMensajes (PeticionID, EstablecimientoID, PacienteID, IdCita, IdReferencia, Especialidad, FechaCita, FechaHoraEnvio, CuerpoMensaje, EstadoEnvio, EstablecimientoDestino)
 VALUES 
-(1, 2, 1, 'CITA-101', 'REF-001', 'Odontología General', GETDATE(), GETDATE() - 1, 'Hola Hernán Oswaldo, le recordamos su cita dental hoy en Clinica Dental San Apolonia.', 'Enviado'),
-(1, 2, 2, 'CITA-102', 'REF-002', 'Ortodoncia', GETDATE() + 1, GETDATE() - 1, 'Hola María Alejandra, le recordamos su cita dental mañana en Clinica Dental San Apolonia.', 'Enviado'),
-(1, 2, 3, 'CITA-103', 'REF-003', 'Endodoncia', GETDATE() + 1, GETDATE() - 1, 'Hola Roberto Carlos, le recordamos su cita dental mañana en Clinica Dental San Apolonia.', 'Error');
+(1, 2, 1, 'CITA-101', 'REF-001', 'Odontología General', GETDATE(), GETDATE() - 1, 'Hola Hernán Oswaldo, le recordamos su cita dental hoy en Clinica Dental San Apolonia.', 'Enviado', 'HOSPITAL MARIA AUXILIADORA'),
+(1, 2, 2, 'CITA-102', 'REF-002', 'Ortodoncia', GETDATE() + 1, GETDATE() - 1, 'Hola María Alejandra, le recordamos su cita dental mañana en Clinica Dental San Apolonia.', 'Enviado', 'HOSPITAL MARIA AUXILIADORA'),
+(1, 2, 3, 'CITA-103', 'REF-003', 'Endodoncia', GETDATE() + 1, GETDATE() - 1, 'Hola Roberto Carlos, le recordamos su cita dental mañana en Clinica Dental San Apolonia.', 'Error', 'HOSPITAL MARIA AUXILIADORA');
 
 -- Mensajes para Pediatría KidsHealth (EstablecimientoID = 3, PeticionID = 2, PacienteID = 5, 6)
-INSERT INTO HistorialMensajes (PeticionID, EstablecimientoID, PacienteID, IdCita, IdReferencia, Especialidad, FechaCita, FechaHoraEnvio, CuerpoMensaje, EstadoEnvio)
+INSERT INTO HistorialMensajes (PeticionID, EstablecimientoID, PacienteID, IdCita, IdReferencia, Especialidad, FechaCita, FechaHoraEnvio, CuerpoMensaje, EstadoEnvio, EstablecimientoDestino)
 VALUES 
-(2, 3, 5, 'CITA-201', 'REF-004', 'Pediatría de Control', GETDATE(), GETDATE() - 2, 'Hola Jorge Chávez, le recordamos la cita de control de Mateo hoy en KidsHealth.', 'Enviado'),
-(2, 3, 6, 'CITA-202', 'REF-005', 'Vacunación', GETDATE() + 2, GETDATE() - 2, 'Hola Diana Ross, le recordamos la cita de vacunación de Valentina en KidsHealth.', 'Enviado');
+(2, 3, 5, 'CITA-201', 'REF-004', 'Pediatría de Control', GETDATE(), GETDATE() - 2, 'Hola Jorge Chávez, le recordamos la cita de control de Mateo hoy en KidsHealth.', 'Enviado', 'CENTRO DE SALUD MENTAL COMUNITARIO SAN GABRIEL ALTO'),
+(2, 3, 6, 'CITA-202', 'REF-005', 'Vacunación', GETDATE() + 2, GETDATE() - 2, 'Hola Diana Ross, le recordamos la cita de vacunación de Valentina en KidsHealth.', 'Enviado', 'CENTRO DE SALUD MENTAL COMUNITARIO SAN GABRIEL ALTO');
 GO

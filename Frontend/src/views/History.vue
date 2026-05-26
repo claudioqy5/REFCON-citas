@@ -2,16 +2,53 @@
   <div class="history-container">
     <div class="glass-panel table-panel">
       <div class="panel-header">
-        <h2>Historial de Mensajes</h2>
-        <button @click="fetchHistory" class="btn btn-secondary">Actualizar</button>
+        <div class="header-title-row">
+          <h2>Historial de Mensajes</h2>
+          <button @click="fetchHistory" class="btn btn-secondary btn-refresh">Actualizar</button>
+        </div>
+        
+        <div class="filter-bar-row">
+          <div class="filter-item search-item">
+            <label>Buscar</label>
+            <input v-model="searchQuery" placeholder="DNI, paciente, especialidad..." class="search-input" />
+          </div>
+          <div class="filter-item type-item">
+            <label>Filtrar por</label>
+            <select v-model="dateTypeFilter" class="status-select">
+              <option value="envio">Fecha Envío</option>
+              <option value="cita">Fecha Cita</option>
+            </select>
+          </div>
+          <div class="filter-item date-item">
+            <label>Desde</label>
+            <input type="date" v-model="startDate" class="date-input" />
+          </div>
+          <div class="filter-item date-item">
+            <label>Hasta</label>
+            <input type="date" v-model="endDate" class="date-input" />
+          </div>
+          <div class="filter-item status-item">
+            <label>Estado</label>
+            <select v-model="statusFilter" class="status-select">
+              <option value="">Todos</option>
+              <option value="Enviado">Enviado</option>
+              <option value="Fallido">Fallido</option>
+            </select>
+          </div>
+          <div class="filter-item action-item">
+            <button @click="clearFilters" class="btn btn-clear">Limpiar</button>
+          </div>
+        </div>
       </div>
 
       <div class="table-wrapper">
-        <table v-if="history.length > 0">
+        <table v-if="filteredHistory.length > 0">
           <thead>
             <tr>
+              <th>DNI</th>
               <th>Paciente</th>
               <th>Celular</th>
+              <th>Est. Destino</th>
               <th>Especialidad</th>
               <th>Fecha Cita</th>
               <th>Fecha Envío</th>
@@ -19,9 +56,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in history" :key="item.mensajeID">
+            <tr v-for="item in filteredHistory" :key="item.mensajeID">
+              <td>{{ item.pacienteDni }}</td>
               <td>{{ item.pacienteNombre }}</td>
               <td>{{ item.pacienteCelular }}</td>
+              <td>{{ item.establecimientoDestino || '-' }}</td>
               <td>{{ item.especialidad }}</td>
               <td>{{ formatDate(item.fechaCita) }}</td>
               <td>{{ formatDate(item.fechaHoraEnvio) }}</td>
@@ -34,7 +73,7 @@
           </tbody>
         </table>
         <div v-else class="empty-state">
-          No hay mensajes en el historial.
+          No se encontraron mensajes en el historial para los filtros seleccionados.
         </div>
       </div>
     </div>
@@ -42,12 +81,73 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
 
 const authStore = useAuthStore()
 const history = ref([])
+
+// Filters state
+const searchQuery = ref('')
+const statusFilter = ref('')
+const dateTypeFilter = ref('envio') // Default to sent date
+
+const getTodayString = () => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+}
+
+const startDate = ref(getTodayString())
+const endDate = ref(getTodayString())
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  statusFilter.value = ''
+  startDate.value = ''
+  endDate.value = ''
+  dateTypeFilter.value = 'envio'
+}
+
+const filteredHistory = computed(() => {
+  return history.value.filter(item => {
+    // 1. Text Search
+    if (searchQuery.value) {
+      const q = searchQuery.value.toLowerCase().trim()
+      const matchesText = 
+        (item.pacienteNombre && item.pacienteNombre.toLowerCase().includes(q)) ||
+        (item.pacienteDni && item.pacienteDni.includes(q)) ||
+        (item.especialidad && item.especialidad.toLowerCase().includes(q)) ||
+        (item.establecimientoDestino && item.establecimientoDestino.toLowerCase().includes(q))
+      if (!matchesText) return false
+    }
+
+    // 2. Status Filter
+    if (statusFilter.value && item.estadoEnvio !== statusFilter.value) {
+      return false
+    }
+
+    // 3. Date Range Filter (Dynamic field select: fechaHoraEnvio or fechaCita)
+    const targetDateStr = dateTypeFilter.value === 'envio' ? item.fechaHoraEnvio : item.fechaCita
+    if (targetDateStr) {
+      const itemDate = new Date(targetDateStr)
+      itemDate.setHours(0, 0, 0, 0)
+
+      if (startDate.value) {
+        const start = new Date(startDate.value + 'T00:00:00')
+        if (itemDate < start) return false
+      }
+      if (endDate.value) {
+        const end = new Date(endDate.value + 'T00:00:00')
+        if (itemDate > end) return false
+      }
+    } else {
+      if (startDate.value || endDate.value) return false
+    }
+
+    return true
+  })
+})
 
 const api = axios.create({
   baseURL: 'http://localhost:5146/api',
@@ -92,17 +192,67 @@ onMounted(() => {
 }
 .panel-header {
   display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+.header-title-row {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  width: 100%;
 }
-.btn-secondary {
-  background: rgba(255,255,255,0.1);
-  color: white;
+.filter-bar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  width: 100%;
+}
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.search-item { flex: 2; min-width: 180px; }
+.type-item { flex: 1; min-width: 120px; }
+.date-item { flex: 1; min-width: 130px; }
+.status-item { flex: 1; min-width: 120px; }
+.action-item { display: flex; align-items: flex-end; }
+
+.search-input, .date-input, .status-select {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+.search-input:focus, .date-input:focus, .status-select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.btn-refresh {
+  background: #E2E8F0;
+  color: #475569;
   border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
 }
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.2);
+.btn-refresh:hover {
+  background: #CBD5E1;
+}
+.btn-clear {
+  background: var(--danger-light);
+  color: var(--danger-color);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+.btn-clear:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
 .table-wrapper {
   overflow-x: auto;

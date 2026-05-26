@@ -6,6 +6,7 @@
       </div>
       <div class="nav-links">
         <router-link to="/">Dashboard</router-link>
+        <router-link to="/patients">Pacientes</router-link>
         <router-link to="/history">Historial</router-link>
         
         <template v-if="authStore.isAdmin">
