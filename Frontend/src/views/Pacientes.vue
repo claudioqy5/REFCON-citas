@@ -12,16 +12,14 @@
       <div class="table-wrapper">
         <table v-if="filteredPatients.length > 0">
           <thead>
-            <tr>
-              <th>ID</th>
+            <tr>              
               <th>DNI</th>
               <th>Nombre Completo</th>
               <th>Celular</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredPatients" :key="item.pacienteID">
-              <td>{{ item.pacienteID }}</td>
+            <tr v-for="item in filteredPatients" :key="item.pacienteID">              
               <td>{{ item.dni }}</td>
               <td>{{ item.nombreCompleto }}</td>
               <td>{{ item.celular }}</td>

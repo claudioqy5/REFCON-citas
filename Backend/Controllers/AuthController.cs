@@ -27,15 +27,21 @@ namespace Backend.Controllers
         {
             var usuario = await _context.Usuarios
                 .Include(u => u.Establecimiento)
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.ContrasenaHash == request.Password);
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            // Nota: En producción usar BCrypt u otro para comparar hashes. Aquí asumimos texto plano o hash simple en DB.
-            if (usuario == null || usuario.Estado != "Activo" || usuario.Establecimiento.Estado != "Activo")
+            // Verify BCrypt hash. If no hash exists yet (migration scenario), reject.
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Password, usuario.ContrasenaHash))
             {
                 return Unauthorized(new { message = "Credenciales incorrectas o cuenta inactiva." });
             }
 
-            var rol = (usuario.EstablecimientoID == 1) ? "Admin" : "User";
+            if (usuario.Estado != "Activo" || usuario.Establecimiento?.Estado != "Activo")
+            {
+                return Unauthorized(new { message = "Credenciales incorrectas o cuenta inactiva." });
+            }
+
+            // Role comes from the database, not a hardcoded condition.
+            var rol = usuario.Rol;
 
             var token = GenerateJwtToken(usuario, rol);
 
@@ -45,7 +51,8 @@ namespace Backend.Controllers
                 UsuarioID = usuario.UsuarioID,
                 EstablecimientoID = usuario.EstablecimientoID,
                 NombreCompleto = usuario.NombreCompleto,
-                Rol = rol
+                Rol = rol,
+                EstablecimientoNombre = usuario.Establecimiento!.NombreEstablecimiento
             });
         }
 

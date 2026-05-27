@@ -7,5 +7,6 @@ namespace Backend.DTOs
         public int EstablecimientoID { get; set; }
         public string NombreCompleto { get; set; } = null!;
         public string Rol { get; set; } = "User";
+        public string EstablecimientoNombre { get; set; } = null!;
     }
 }

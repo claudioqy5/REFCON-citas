@@ -1,4 +1,5 @@
 using Backend.Models;
+using Backend.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +56,11 @@ namespace Backend.Controllers
                 return BadRequest(new { message = "Ya existe un proceso de envío en curso." });
             }
 
-            // 2. Create PeticionEnvio
+            // 2. Fetch the user credentials
+            var activeUser = await _context.Usuarios.FindAsync(usuarioId);
+            string? usuarioReferencial = activeUser?.UsuarioReferencial;
+            string? claveReferencial = activeUser?.ClaveReferencial;
+
             var peticion = new PeticionEnvio
             {
                 EstablecimientoID = establecimientoId,
@@ -74,7 +79,9 @@ namespace Backend.Controllers
                 var payload = new
                 {
                     PeticionID = peticion.PeticionID,
-                    EstablecimientoID = peticion.EstablecimientoID
+                    EstablecimientoID = peticion.EstablecimientoID,
+                    UsuarioReferencial = usuarioReferencial,
+                    ClaveReferencial = claveReferencial
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -140,7 +147,10 @@ namespace Backend.Controllers
                     h.FechaHoraEnvio,
                     h.EstadoEnvio,
                     h.CuerpoMensaje,
-                    h.EstablecimientoDestino
+                    h.EstablecimientoDestino,
+                    h.Consultorio,
+                    h.Medico,
+                    EstablecimientoNombre = h.Establecimiento.NombreEstablecimiento
                 })
                 .ToListAsync();
 
@@ -163,6 +173,135 @@ namespace Backend.Controllers
                 .ToListAsync();
 
             return Ok(patients);
+        }
+
+        [HttpGet("establishment")]
+        public async Task<IActionResult> GetEstablishmentName()
+        {
+            int establecimientoId = GetEstablecimientoID();
+            var est = await _context.Establecimientos.FindAsync(establecimientoId);
+            if (est == null) return NotFound();
+            return Ok(new { name = est.NombreEstablecimiento });
+        }
+
+        [HttpPost("log")]
+        public async Task<IActionResult> LogMessage([FromBody] SaveHistoryDto dto)
+        {
+            if (dto == null) return BadRequest("Datos nulos");
+
+            // 1. Resolve or create patient
+            var paciente = await _context.Pacientes
+                .FirstOrDefaultAsync(p => p.Dni == dto.PacienteDni && p.EstablecimientoID == dto.EstablecimientoID);
+
+            if (paciente == null)
+            {
+                paciente = new Paciente
+                {
+                    EstablecimientoID = dto.EstablecimientoID,
+                    Dni = dto.PacienteDni,
+                    NombreCompleto = dto.PacienteNombre,
+                    Celular = dto.PacienteCelular
+                };
+                _context.Pacientes.Add(paciente);
+                await _context.SaveChangesAsync(); // save to get PacienteID
+            }
+            else
+            {
+                // Optionally update name/phone if they changed
+                bool modified = false;
+                if (paciente.NombreCompleto != dto.PacienteNombre) { paciente.NombreCompleto = dto.PacienteNombre; modified = true; }
+                if (paciente.Celular != dto.PacienteCelular) { paciente.Celular = dto.PacienteCelular; modified = true; }
+                if (modified)
+                {
+                    _context.Entry(paciente).State = EntityState.Modified;
+                }
+            }
+
+            // 2. Insert into HistorialMensajes
+            var historial = new HistorialMensaje
+            {
+                PeticionID = dto.PeticionID,
+                EstablecimientoID = dto.EstablecimientoID,
+                PacienteID = paciente.PacienteID,
+                IdCita = dto.IdCita,
+                IdReferencia = dto.IdReferencia,
+                Especialidad = dto.Especialidad,
+                FechaCita = dto.FechaCita,
+                FechaHoraEnvio = DateTime.UtcNow,
+                CuerpoMensaje = dto.CuerpoMensaje,
+                EstadoEnvio = dto.EstadoEnvio,
+                EstablecimientoDestino = dto.EstablecimientoDestino,
+                Consultorio = dto.Consultorio,
+                Medico = dto.Medico
+            };
+
+            _context.HistorialMensajes.Add(historial);
+            await _context.SaveChangesAsync();
+
+            // Also check if process state is "Pendiente" and update it to "Procesando"
+            var peticion = await _context.PeticionesEnvio.FindAsync(dto.PeticionID);
+            if (peticion != null && peticion.EstadoProceso == "Pendiente")
+            {
+                peticion.EstadoProceso = "Procesando";
+                _context.Entry(peticion).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { success = true, mensajeID = historial.MensajeID });
+        }
+
+        [HttpPost("complete-process/{id}")]
+        public async Task<IActionResult> CompleteProcess(int id, [FromBody] CompleteProcessDto dto)
+        {
+            var peticion = await _context.PeticionesEnvio.FindAsync(id);
+            if (peticion == null) return NotFound("Petición no encontrada");
+
+            peticion.EstadoProceso = dto.EstadoProceso;
+            peticion.FechaFinalizacion = DateTime.UtcNow;
+
+            _context.Entry(peticion).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, peticionID = id, estado = peticion.EstadoProceso });
+        }
+
+        [HttpGet("credentials")]
+        public async Task<IActionResult> GetCredentials()
+        {
+            int usuarioId = GetUsuarioID();
+            if (usuarioId == 0) return Unauthorized();
+
+            var user = await _context.Usuarios.FindAsync(usuarioId);
+            if (user == null) return NotFound("Usuario no encontrado");
+
+            return Ok(new
+            {
+                usuarioReferencial = user.UsuarioReferencial,
+                hasPassword = !string.IsNullOrEmpty(user.ClaveReferencial)
+            });
+        }
+
+        [HttpPost("credentials")]
+        public async Task<IActionResult> SaveCredentials([FromBody] SaveCredentialsDto dto)
+        {
+            int usuarioId = GetUsuarioID();
+            if (usuarioId == 0) return Unauthorized();
+
+            if (dto == null) return BadRequest("Datos nulos");
+
+            var user = await _context.Usuarios.FindAsync(usuarioId);
+            if (user == null) return NotFound("Usuario no encontrado");
+
+            user.UsuarioReferencial = dto.UsuarioReferencial;
+            if (!string.IsNullOrEmpty(dto.ClaveReferencial))
+            {
+                user.ClaveReferencial = dto.ClaveReferencial;
+            }
+
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Credenciales de scraping guardadas correctamente." });
         }
     }
 }

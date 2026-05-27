@@ -15,6 +15,7 @@
               <th>Nombre</th>
               <th>Email</th>
               <th>Estado</th>
+              <th>Rol</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -28,6 +29,9 @@
                 <span :class="['badge', item.estado === 'Activo' ? 'badge-success' : 'badge-danger']">
                   {{ item.estado }}
                 </span>
+              </td>
+              <td>
+                <span :class="['badge', item.rol === 'Admin' ? 'badge-admin' : 'badge-user']">{{ item.rol }}</span>
               </td>
               <td>
                 <button @click="openEditModal(item)" class="btn btn-sm btn-secondary">Editar</button>
@@ -65,8 +69,15 @@
           </div>
           <div class="form-group">
             <label>Contraseña {{ isEditing ? '(Dejar en blanco para no cambiar)' : '' }}</label>
-            <input type="password" v-model="form.contrasenaHash" :required="!isEditing" :class="{ 'input-error': errors.ContrasenaHash }" />
-            <span class="field-error" v-if="errors.ContrasenaHash">{{ errors.ContrasenaHash.join(', ') }}</span>
+            <input type="password" v-model="form.contrasena" :required="!isEditing" :class="{ 'input-error': errors.Contrasena }" />
+            <span class="field-error" v-if="errors.Contrasena">{{ errors.Contrasena.join(', ') }}</span>
+          </div>
+          <div class="form-group">
+            <label>Rol</label>
+            <select v-model="form.rol" class="form-select">
+              <option value="User">User (Establecimiento)</option>
+              <option value="Admin">Admin (Super Administrador)</option>
+            </select>
           </div>
           <div class="form-group" v-if="isEditing">
             <label>Estado</label>
@@ -96,7 +107,7 @@ const establecimientos = ref([])
 const showModal = ref(false)
 const isEditing = ref(false)
 const errors = ref({})
-const form = ref({ usuarioID: 0, establecimientoID: '', nombreCompleto: '', email: '', contrasenaHash: '', estado: 'Activo' })
+const form = ref({ usuarioID: 0, establecimientoID: '', nombreCompleto: '', email: '', contrasena: '', estado: 'Activo', rol: 'User' })
 
 const api = axios.create({
   baseURL: 'http://localhost:5146/api',
@@ -113,14 +124,14 @@ const fetchData = async () => {
 const openCreateModal = () => {
   isEditing.value = false
   errors.value = {}
-  form.value = { usuarioID: 0, establecimientoID: '', nombreCompleto: '', email: '', contrasenaHash: '', estado: 'Activo' }
+  form.value = { usuarioID: 0, establecimientoID: '', nombreCompleto: '', email: '', contrasena: '', estado: 'Activo', rol: 'User' }
   showModal.value = true
 }
 
 const openEditModal = (item) => {
   isEditing.value = true
   errors.value = {}
-  form.value = { ...item, contrasenaHash: '' } // Clear password field for editing
+  form.value = { ...item, contrasena: '' } // Clear password field for editing
   showModal.value = true
 }
 
@@ -158,6 +169,8 @@ th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-
 .badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
 .badge-success { background: rgba(16, 185, 129, 0.2); color: #10B981; }
 .badge-danger { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+.badge-admin { background: rgba(99, 102, 241, 0.2); color: #6366F1; }
+.badge-user { background: rgba(148, 163, 184, 0.15); color: #94A3B8; }
 
 /* Modal */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
