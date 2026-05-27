@@ -13,13 +13,15 @@
         <table v-if="filteredPatients.length > 0">
           <thead>
             <tr>              
+              <th class="col-num">#</th>
               <th>DNI</th>
               <th>Nombre Completo</th>
               <th>Celular</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredPatients" :key="item.pacienteID">              
+            <tr v-for="(item, index) in filteredPatients" :key="item.pacienteID">              
+              <td class="col-num"><strong>{{ index + 1 }}</strong></td>
               <td>{{ item.dni }}</td>
               <td>{{ item.nombreCompleto }}</td>
               <td>{{ item.celular }}</td>
@@ -135,6 +137,11 @@ tr:hover td {
 .empty-state {
   text-align: center;
   padding: 3rem;
+  color: var(--text-muted);
+}
+.col-num {
+  width: 40px;
+  text-align: center;
   color: var(--text-muted);
 }
 </style>

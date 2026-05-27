@@ -45,6 +45,7 @@
         <table v-if="filteredHistory.length > 0">
           <thead>
             <tr>
+              <th class="col-num">#</th>
               <th>DNI</th>
               <th>Paciente</th>
               <th>Celular</th>
@@ -57,7 +58,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredHistory" :key="item.mensajeID">
+            <tr v-for="(item, index) in filteredHistory" :key="item.mensajeID">
+              <td class="col-num"><strong>{{ index + 1 }}</strong></td>
               <td>{{ item.pacienteDni }}</td>
               <td>{{ item.pacienteNombre }}</td>
               <td>{{ item.pacienteCelular }}</td>
@@ -838,5 +840,10 @@ tr:hover td {
   .details-grid {
     grid-template-columns: 1fr;
   }
+}
+.col-num {
+  width: 40px;
+  text-align: center;
+  color: var(--text-muted);
 }
 </style>
