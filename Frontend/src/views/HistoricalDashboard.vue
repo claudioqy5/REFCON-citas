@@ -70,14 +70,16 @@
         </div>
         <div class="bar-chart">
           <div v-for="(day, index) in daysOfWeek" :key="day" class="bar-wrapper">
-            <div class="bar-tooltip">{{ weeklyCounts[index] }} mensajes</div>
             <div 
               class="bar" 
+              v-if="weeklyCounts[index] > 0"
               :style="{ 
                 height: getBarHeight(weeklyCounts[index]),
                 backgroundColor: barColors[index]
               }"
-            ></div>
+            >
+              <div class="bar-tooltip">{{ weeklyCounts[index] }} mensajes</div>
+            </div>
             <span class="bar-label">{{ day.substring(0, 3) }}</span>
           </div>
         </div>
@@ -452,7 +454,9 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  height: 22vh; /* Explicit height inside card to resolve percentage heights correctly */
+  height: auto;
+  flex-grow: 1;
+  min-height: 250px;
   padding-top: 1vh;
   border-bottom: 1px solid var(--border-color);
   width: 100%;
@@ -468,10 +472,13 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .bar {
-  width: 26px; /* Optimized wider bar for premium UX */
+  width: 28px; /* Slightly wider bar */
   border-radius: 6px 6px 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 4px;
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 .bar:hover {
   filter: brightness(1.15);
@@ -479,7 +486,9 @@ onUnmounted(() => {
 }
 .bar-tooltip {
   position: absolute;
-  top: -35px;
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 8px;
   background: #1E293B;
   color: #FFFFFF;
   padding: 0.35rem 0.6rem;
@@ -493,7 +502,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   z-index: 10;
 }
-.bar-wrapper:hover .bar-tooltip {
+.bar:hover .bar-tooltip {
   opacity: 1;
 }
 .bar-label {
