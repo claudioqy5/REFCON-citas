@@ -7,36 +7,22 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Hostinger VPS
     runs-on: ubuntu-latest
     steps:
-      - name: Execute remote commands via SSH
+      - name: Ejecutar despliegue por SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 76.13.225.53
-          username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            echo "Starting continuous deployment..."
+            # Nos movemos a la carpeta del proyecto en tu VPS
+            cd /root/refcon-citas
             
-            # Navigate to the project folder (ensure this path matches your VPS setup)
-            cd /var/www/refcon-citas || { echo "Project directory not found!"; exit 1; }
+            # Forzamos que el código sea exactamente igual al de GitHub
+            git fetch --all
+            git reset --hard origin/master
             
-            # Pull latest changes from master branch
-            echo "Pulling latest code from GitHub..."
-            git pull origin master
-            
-            # Verify .env file exists, otherwise copy from example
-            if [ ! -f .env ]; then
-              echo "Warning: .env file not found. Copying .env.example..."
-              cp .env.example .env
-              echo "Please update the production credentials inside .env on your VPS!"
-            fi
-            
-            # Build and restart Docker containers in detached mode
-            echo "Building and restarting Docker services..."
-            docker-compose down
-            docker-compose up -d --build
-            
-            echo "Deployment completed successfully! 🚀"
+            # Reconstruimos los contenedores (Frontend y Backend) con los nuevos cambios
+            docker compose down
+            docker compose up -d --build
