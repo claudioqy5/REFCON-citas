@@ -110,7 +110,7 @@ const errors = ref({})
 const form = ref({ usuarioID: 0, establecimientoID: '', nombreCompleto: '', email: '', contrasena: '', estado: 'Activo', rol: 'User' })
 
 const api = axios.create({
-  baseURL: 'http://localhost:5146/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5146/api',
   headers: { Authorization: `Bearer ${authStore.token}` }
 })
 

@@ -47,7 +47,7 @@ const handleLogin = async () => {
   errorMsg.value = ''
   try {
     // Port 5146 from launchSettings.json
-    const response = await axios.post('http://localhost:5146/api/auth/login', {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5146/api'}/auth/login`, {
       email: email.value,
       password: password.value
     })

@@ -78,7 +78,7 @@ const isEditing = ref(false)
 const form = ref({ establecimientoID: 0, codigoUnico: '', nombreEstablecimiento: '', estado: 'Activo' })
 
 const api = axios.create({
-  baseURL: 'http://localhost:5146/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5146/api',
   headers: { Authorization: `Bearer ${authStore.token}` }
 })
 
