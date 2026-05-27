@@ -94,7 +94,7 @@
           </div>
         </div>
         <div class="bar-chart">
-          <div v-for="(day, index) in daysOfWeek" :key="day" class="bar-wrapper">
+          <div v-for="(item, index) in daysWithDates" :key="item.name" class="bar-wrapper">
             <div class="bar-tooltip">{{ weeklyCounts[index] }} mensajes</div>
             <div 
               class="bar" 
@@ -103,7 +103,8 @@
                 backgroundColor: barColors[index]
               }"
             ></div>
-            <span class="bar-label">{{ day.substring(0, 3) }}</span>
+            <span class="bar-label">{{ item.name }}</span>
+            <span class="bar-date">{{ item.date }}</span>
           </div>
         </div>
       </div>
@@ -418,6 +419,20 @@ watch(selectedWeekRange, (newRange) => {
 
 // Weekly Chart computations
 const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+
+const daysWithDates = computed(() => {
+  if (!selectedWeekRange.value.min) return daysOfWeek.map(d => ({ name: d.substring(0, 3), date: '' }));
+  const minDate = new Date(selectedWeekRange.value.min);
+  const result = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(minDate);
+    d.setUTCDate(d.getUTCDate() + i);
+    const dayName = daysOfWeek[i].substring(0, 3);
+    const dateStr = `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    result.push({ name: dayName, date: dateStr });
+  }
+  return result;
+})
 const weeklyCounts = computed(() => {
   const counts = [0, 0, 0, 0, 0, 0, 0]
   history.value.forEach(item => {
@@ -882,7 +897,9 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  height: 22vh; /* Explicit height inside card to resolve percentage heights correctly */
+  height: auto;
+  flex-grow: 1;
+  min-height: 250px;
   padding-top: 1vh;
   border-bottom: 1px solid var(--border-color);
   width: 100%;
@@ -898,7 +915,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .bar {
-  width: 26px; /* Optimized wider bar for premium UX */
+  width: 28px; /* Slightly wider bar */
   border-radius: 6px 6px 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 4px;
@@ -931,6 +948,12 @@ onUnmounted(() => {
   font-size: 0.8rem;
   color: var(--text-muted);
   font-weight: 500;
+}
+.bar-date {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 400;
+  margin-top: 0.15rem;
 }
 
 /* Premium Filter Layout */
