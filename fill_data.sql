@@ -42,10 +42,10 @@ SET IDENTITY_INSERT Usuarios ON;
 
 INSERT INTO Usuarios (UsuarioID, EstablecimientoID, NombreCompleto, Email, ContrasenaHash, Estado, Rol)
 VALUES 
-(1, 1, 'Super Administrador', 'admin@saas.com',   '$2a$11$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'Activo', 'Admin'),
-(2, 2, 'Dra. Beatríz Mendoza', 'beatriz@dental.com', '$2a$11$92IXUNpkjO0rOQ5byMi.YeIcqdlRFq.yXV0.82S4eNGjBBstEtXKC', 'Activo', 'User'),
-(3, 3, 'Dr. Carlos Pinedo', 'carlos@kidshealth.com', '$2a$11$92IXUNpkjO0rOQ5byMi.YegIwlQVGYOzfYCSOvPX6O9rDGJo4Yj3O', 'Activo', 'User'),
-(4, 4, 'Enfermera Sofía Larrea', 'sofia@hospital.com', '$2a$11$92IXUNpkjO0rOQ5byMi.Ye6WL7QJsczKKnxF2qqQkZV9oMHe.UAHS', 'Activo', 'User');
+(1, 1, 'Super Administrador', 'admin@saas.com',   '$2a$11$dg7HiU3jSOju90z1K0ouCual4ygXUnKxNU17NxYmF9fn.J8X84aQa', 'Activo', 'Admin'),
+(2, 2, 'Dra. Beatríz Mendoza', 'beatriz@dental.com', '$2a$11$NTg.4DlVEgWY9UNSKeD6p.VsNIFaUh8Ar2YZIJpg/h5OND5IH9mqy', 'Activo', 'User'),
+(3, 3, 'Dr. Carlos Pinedo', 'carlos@kidshealth.com', '$2a$11$zv2EL7uGczUxxLRWVuCAp.56oyXbv8gpU29ipptigFkGEOHDccJzi', 'Activo', 'User'),
+(4, 4, 'Enfermera Sofía Larrea', 'sofia@hospital.com', '$2a$11$ujqd54.7P0XWyjOb0erUeeCn.HaC95zG0IucX7P.VL1rx6B3vpEYu', 'Activo', 'User');
 
 SET IDENTITY_INSERT Usuarios OFF;
 GO
