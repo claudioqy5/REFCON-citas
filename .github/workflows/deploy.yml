@@ -17,7 +17,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             # Nos movemos a la carpeta del proyecto en tu VPS
-            cd /root/refcon-citas
+            cd /var/www/refcon-citas
             
             # Forzamos que el código sea exactamente igual al de GitHub
             git fetch --all
