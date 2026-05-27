@@ -3,7 +3,8 @@
     <nav v-if="authStore.isAuthenticated" :class="authStore.isAdmin ? 'navbar glass-panel' : 'sidebar glass-panel'">
       <div class="nav-brand">
         <span class="brand-icon">🩺</span>
-        <span class="brand-text">Recordatorios</span>
+        <span class="brand-text">REFCON</span>
+        <span class="brand-text">citas</span>
       </div>
       <div class="nav-links">
         <router-link to="/">
