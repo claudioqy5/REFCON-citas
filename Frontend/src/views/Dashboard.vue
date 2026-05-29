@@ -79,7 +79,6 @@
       </div>
     </div>
 
-<<<<<<< HEAD
     <!-- 2. QUICK ACTIONS & STATUS -->
     <div class="action-grid">
       <div class="glass-panel main-panel">
@@ -167,9 +166,6 @@
         <p v-if="errorMsg" class="error-msg">⚠️ {{ errorMsg }}</p>
       </div>
     </div>
-
-=======
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
     <!-- 3. CHARTS SECTION -->
     <div class="charts-grid">
       <!-- Weekly Chart -->
@@ -347,13 +343,7 @@ const api = axios.create({
   }
 })
 
-<<<<<<< HEAD
-// ── Métricas ─────────────────────────────────────────────────────────────────
-const totalPatients = computed(() => patients.value.length)
-const totalMessages = computed(() => history.value.length)
-const successfulMessages = computed(() => history.value.filter(m => m.estadoEnvio === 'Enviado').length)
-const failedMessages = computed(() => history.value.filter(m => m.estadoEnvio === 'Error').length)
-=======
+
 // Credentials Modal State
 const showCredentialsModal = ref(false)
 const credUser = ref('')
@@ -519,7 +509,6 @@ watch(selectedWeekRange, (newRange) => {
     }
   }
 }, { immediate: true })
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
 
 // ── Gráfica semanal ───────────────────────────────────────────────────────────
 const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -540,13 +529,8 @@ const daysWithDates = computed(() => {
 const weeklyCounts = computed(() => {
   const counts = [0, 0, 0, 0, 0, 0, 0]
   history.value.forEach(item => {
-<<<<<<< HEAD
-    if (item.fechaHoraEnvio) {
-      const day = new Date(item.fechaHoraEnvio).getDay()
-=======
     if (item.fechaHoraEnvio && isDateInSelectedWeek(item.fechaHoraEnvio, selectedWeek.value)) {
       const day = new Date(item.fechaHoraEnvio).getDay() // 0 = Sun, 1 = Mon...
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
       const index = day === 0 ? 6 : day - 1
       counts[index]++
     }
@@ -555,24 +539,7 @@ const weeklyCounts = computed(() => {
 })
 const getBarHeight = (count) => {
   const max = Math.max(...weeklyCounts.value, 1)
-<<<<<<< HEAD
-  return `${Math.max((count / max) * 150, 6)}px`
-}
 
-// ── Gráfica especialidades ────────────────────────────────────────────────────
-const topSpecialties = computed(() => {
-  const specMap = {}
-  history.value.forEach(item => {
-    if (item.especialidad) specMap[item.especialidad] = (specMap[item.especialidad] || 0) + 1
-  })
-  return Object.keys(specMap).map(name => ({ name, count: specMap[name] }))
-    .sort((a, b) => b.count - a.count).slice(0, 4)
-})
-const getProgressWidth = (count) => {
-  if (!topSpecialties.value.length) return '0%'
-  return `${(count / topSpecialties.value[0].count) * 100}%`
-}
-=======
   const percentage = (count / max) * 90 // max height 90% of the bar-chart container
   return `${Math.max(percentage, 5)}%`
 }
@@ -637,7 +604,6 @@ const specialtiesChartData = computed(() => {
     }
   })
 })
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
 
 // ── Estado de ejecución ───────────────────────────────────────────────────────
 const isProcessing = computed(() =>
@@ -719,13 +685,9 @@ const fetchData = async () => {
       api.get('/reminders/establishment')
     ])
     currentStatus.value = resStatus.data.estado
-<<<<<<< HEAD
     lastPeticion.value  = resStatus.data.ultimaPeticion ?? null
     history.value       = resHistory.data
     patients.value      = resPatients.data
-=======
-    history.value = resHistory.data
-    patients.value = resPatients.data
     if (resEst.data && resEst.data.name) {
       establishmentNombre.value = resEst.data.name
       // Auto-update the authStore user object so other views can benefit immediately
@@ -734,7 +696,6 @@ const fetchData = async () => {
         localStorage.setItem('user', JSON.stringify(authStore.user))
       }
     }
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
   } catch (err) {
     console.error('Error fetching dashboard data', err)
   }
@@ -1091,7 +1052,6 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   line-height: 1;
 }
 
-<<<<<<< HEAD
 /* 2. ACTION & STATUS PANELS */
 .action-grid { width: 100%; }
 .main-panel { padding: 2rem 2.5rem; }
@@ -1247,9 +1207,6 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   border-radius: 8px;
   border: 1px solid rgba(239,68,68,0.15);
 }
-
-=======
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
 /* 3. CHARTS STYLE */
 .charts-grid {
   display: grid;
@@ -1513,7 +1470,7 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   font-size: 0.9rem;
 }
 
-<<<<<<< HEAD
+
 /* AUTO SEND SETTINGS TOGGLE STYLE */
 .auto-send-settings {
   background: rgba(255, 255, 255, 0.05);
@@ -1563,7 +1520,15 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 .slider {
   position: absolute;
   cursor: pointer;
-=======
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: .4s;
+  border-radius: 34px;
+}
+
 @media (max-width: 480px) {
   .donut-chart-container {
     flex-direction: column;
@@ -1605,18 +1570,19 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   transform: rotate(45deg) scale(0.95);
 }
 
-/* Glassmorphic Modal Overlay */
 .modal-overlay {
   position: fixed;
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-<<<<<<< HEAD
-  background-color: #cbd5e1;
-  transition: .4s;
-  border-radius: 34px;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 2rem;
 }
 .slider:before {
   position: absolute;
@@ -1638,15 +1604,8 @@ input:focus + .slider {
 }
 input:checked + .slider:before {
   transform: translateX(24px);
-=======
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  padding: 2rem;
 }
+
 
 /* Modal Content Box */
 .modal-content {
@@ -1826,7 +1785,7 @@ input:checked + .slider:before {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.96) translateY(8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
+
 }
 </style>
 
