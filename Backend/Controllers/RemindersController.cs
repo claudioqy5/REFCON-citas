@@ -188,7 +188,6 @@ namespace Backend.Controllers
             return Ok(patients);
         }
 
-<<<<<<< HEAD
         [HttpGet("settings")]
         public async Task<IActionResult> GetSettings()
         {
@@ -219,12 +218,7 @@ namespace Backend.Controllers
 
             return Ok(new { message = "Configuración actualizada con éxito.", envioAutomatico = establecimiento.EnvioAutomatico });
         }
-    }
 
-    public class SettingsDto
-    {
-        public bool EnvioAutomatico { get; set; }
-=======
         [HttpGet("establishment")]
         public async Task<IActionResult> GetEstablishmentName()
         {
@@ -353,6 +347,10 @@ namespace Backend.Controllers
 
             return Ok(new { success = true, message = "Credenciales de scraping guardadas correctamente." });
         }
->>>>>>> 6ec514f5361095772354d396af9aff0b4e4600e5
+    }
+
+    public class SettingsDto
+    {
+        public bool EnvioAutomatico { get; set; }
     }
 }
