@@ -104,18 +104,31 @@ namespace Backend.Controllers
         public async Task<IActionResult> GetStatus()
         {
             int establecimientoId = GetEstablecimientoID();
-            
+
             var peticion = await _context.PeticionesEnvio
                 .Where(p => p.EstablecimientoID == establecimientoId)
                 .OrderByDescending(p => p.FechaPeticion)
                 .FirstOrDefaultAsync();
 
             if (peticion == null)
-            {
                 return Ok(new { estado = "Ninguno", ultimaPeticion = (object?)null });
-            }
 
-            return Ok(new { estado = peticion.EstadoProceso, ultimaPeticion = peticion });
+            return Ok(new
+            {
+                estado = peticion.EstadoProceso,
+                ultimaPeticion = new
+                {
+                    peticion.PeticionID,
+                    peticion.EstadoProceso,
+                    peticion.FechaPeticion,
+                    peticion.FechaFinalizacion,
+                    peticion.TotalPacientesNuevos,
+                    peticion.TotalEnviados,
+                    peticion.TotalErrores,
+                    peticion.MensajeError,
+                    peticion.EtapaError
+                }
+            });
         }
 
         [HttpGet("history")]
@@ -164,5 +177,41 @@ namespace Backend.Controllers
 
             return Ok(patients);
         }
+
+        [HttpGet("settings")]
+        public async Task<IActionResult> GetSettings()
+        {
+            int establecimientoId = GetEstablecimientoID();
+            if (establecimientoId == 0) return Unauthorized();
+
+            var establecimiento = await _context.Establecimientos
+                .FirstOrDefaultAsync(e => e.EstablecimientoID == establecimientoId);
+
+            if (establecimiento == null) return NotFound();
+
+            return Ok(new { envioAutomatico = establecimiento.EnvioAutomatico });
+        }
+
+        [HttpPost("settings")]
+        public async Task<IActionResult> UpdateSettings([FromBody] SettingsDto dto)
+        {
+            int establecimientoId = GetEstablecimientoID();
+            if (establecimientoId == 0) return Unauthorized();
+
+            var establecimiento = await _context.Establecimientos
+                .FirstOrDefaultAsync(e => e.EstablecimientoID == establecimientoId);
+
+            if (establecimiento == null) return NotFound();
+
+            establecimiento.EnvioAutomatico = dto.EnvioAutomatico;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Configuración actualizada con éxito.", envioAutomatico = establecimiento.EnvioAutomatico });
+        }
+    }
+
+    public class SettingsDto
+    {
+        public bool EnvioAutomatico { get; set; }
     }
 }

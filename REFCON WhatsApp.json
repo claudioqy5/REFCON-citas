@@ -1,0 +1,1056 @@
+{
+  "name": "REFCON WhatsApp - CON BD (v2) - Corregido",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "7f1db21c-ac1e-4f17-8b78-d24f781e32f0",
+      "name": "Programación Diaria",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [7050, 1680]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "refcon-trigger",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook Manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [7050, 1860]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg-001",
+              "name": "backendUrl",
+              "value": "https://refconcitas.helifyferdigital.cloud/",
+              "type": "string"
+            },
+            {
+              "id": "cfg-002",
+              "name": "apiKey",
+              "value": "refcon-n8n-secret-key-2025",
+              "type": "string"
+            },
+            {
+              "id": "cfg-003",
+              "name": "establecimientoId",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cfg00001-0000-0000-0000-000000000001",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [7260, 1680]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg-m1",
+              "name": "backendUrl",
+              "value": "https://refconcitas.helifyferdigital.cloud/",
+              "type": "string"
+            },
+            {
+              "id": "cfg-m2",
+              "name": "apiKey",
+              "value": "refcon-n8n-secret-key-2025",
+              "type": "string"
+            },
+            {
+              "id": "cfg-m3",
+              "name": "establecimientoId",
+              "value": "={{ $json.body.EstablecimientoID }}",
+              "type": "number"
+            },
+            {
+              "id": "cfg-m4",
+              "name": "peticionId",
+              "value": "={{ $json.body.PeticionID }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cfg-manual-node",
+      "name": "Set Manual Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [7260, 1860]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.backendUrl }}/api/n8n/inicio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "={{ $json.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"establecimientoId\": {{ $json.establecimientoId }},\n  \"peticionId\": {{ $json.peticionId ? $json.peticionId : \"null\" }}\n}",
+        "options": {}
+      },
+      "id": "cpe00001-0000-0000-0000-000000000001",
+      "name": "Crear Peticion BD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7480, 1780]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "chk-procesar",
+              "leftValue": "={{ !!$json.procesar }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "chk-procesar-node",
+      "name": "Validar Procesar",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [7680, 1780]
+    },
+    {
+      "parameters": {
+        "url": "https://refcon.minsa.gob.pe/refconv02/",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "817067d0-06a8-4263-bd33-6792a33e7c4b",
+      "name": "Paso 0: Inicializar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7920, 1700],
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refcon.minsa.gob.pe/refconv02/desktop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $node['Paso 0: Inicializar'].json.headers['set-cookie'] ? $node['Paso 0: Inicializar'].json.headers['set-cookie'].join('; ') : '' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "C",
+              "value": "VALIDARLOGIN"
+            },
+            {
+              "name": "S",
+              "value": "INIT"
+            },
+            {
+              "name": "mlkuser",
+              "value": "10705078"
+            },
+            {
+              "name": "mlkpass",
+              "value": "Hernanoswaldo123*"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "c67eeeb5-ed88-4ffd-9c7b-28b9659e5685",
+      "name": "Paso 1: VALIDARLOGIN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [8120, 1700],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Crear Peticion BD').first().json.peticionId ? 'https://refconcitas.helifyferdigital.cloud/api/n8n/error' : 'https://refconcitas.helifyferdigital.cloud/api/n8n/error' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": 1,\n  \"etapa\": \"RefconLogin\",\n  \"mensaje\": \"Error al iniciar sesión en REFCON. Verifique las credenciales (usuario/contraseña).\"\n}",
+        "options": {}
+      },
+      "id": "err00001-0000-0000-0000-000000000001",
+      "name": "Callback Error: Login",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [8320, 1920],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const s0 = $('Paso 0: Inicializar').first().json.headers['set-cookie'] || [];\nconst s1 = $('Paso 1: VALIDARLOGIN').first().json.headers['set-cookie'] || [];\n\nconst map = {};\n[...s0, ...s1].forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ') } }];"
+      },
+      "id": "e4ddec32-e89f-486a-b5d0-1270a3f427a6",
+      "name": "Acumular Cookies A",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [8320, 1700]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refcon.minsa.gob.pe/refconv02/desktop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "C",
+              "value": "LOGIN"
+            },
+            {
+              "name": "S",
+              "value": "INIT"
+            },
+            {
+              "name": "_dcp"
+            },
+            {
+              "name": "mlkuser",
+              "value": "10705078"
+            },
+            {
+              "name": "mlkpass",
+              "value": "Hernanoswaldo123*"
+            },
+            {
+              "name": "mlkEESS"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "fb4c6baf-413a-4e4e-966d-c4fbde3987db",
+      "name": "Paso 2: LOGIN INIT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [8520, 1700]
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $('Acumular Cookies A').first().json.cookies;\nconst s2 = $('Paso 2: LOGIN INIT').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprev.split('; ').forEach(c => { const p = c.split('='); if(p.length>=2) map[p[0]] = p[1]; });\ns2.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ');\nreturn [{ json: { cookieString, hasByt: !!map['byt'] } }];"
+      },
+      "id": "64dcb4ac-2d7d-4fd0-8755-65314934f21d",
+      "name": "Verificar Byt Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [8720, 1700]
+    },
+    {
+      "parameters": {
+        "url": "https://refcon.minsa.gob.pe/refconv02/his/referencia",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "_dc",
+              "value": "={{ Date.now() }}"
+            },
+            {
+              "name": "idtipodoc",
+              "value": "1"
+            },
+            {
+              "name": "numdoc"
+            },
+            {
+              "name": "nrohis"
+            },
+            {
+              "name": "idestado",
+              "value": "7"
+            },
+            {
+              "name": "nomcomppac"
+            },
+            {
+              "name": "idespecialidad"
+            },
+            {
+              "name": "fechaini",
+              "value": "={{ $now.minus({months: 2}).toFormat('dd/MM/yyyy') }}"
+            },
+            {
+              "name": "fechafin",
+              "value": "={{ $now.toFormat('dd/MM/yyyy') }}"
+            },
+            {
+              "name": "iddestino"
+            },
+            {
+              "name": "C",
+              "value": "REFERENCIA"
+            },
+            {
+              "name": "S",
+              "value": "REFERIDOS"
+            },
+            {
+              "name": "idflag",
+              "value": "CP"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            },
+            {
+              "name": "start",
+              "value": "0"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookieString }}"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "32e2065f-82db-419f-a3f2-77e96e00bb6a",
+      "name": "Obtener Pacientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [8940, 1700]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items[0].json.data;\ntry {\n  const response = JSON.parse(data);\n  return response.items.map(p => ({ json: p }));\n} catch (e) {\n  throw new Error('El servidor de REFCON respondió con error: ' + data);\n}"
+      },
+      "id": "35563d81-729c-4012-ae34-e0e32154714d",
+      "name": "Parser: Lista de Pacientes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9140, 1700]
+    },
+    {
+      "parameters": {
+        "url": "https://refconcitas.helifyferdigital.cloud/api/n8n/enviados",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "establecimientoId",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "oeb00001-0000-0000-0000-000000000001",
+      "name": "Obtener Enviados BD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [9340, 1700],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const pacientesRefcon = $('Parser: Lista de Pacientes').all();\nconst responseEnviados = $('Obtener Enviados BD').first().json;\nconst idsEnviados = new Set((responseEnviados.ids || []).map(id => String(id)));\n\nconst nuevos = pacientesRefcon.filter(p => !idsEnviados.has(String(p.json.idcita)));\nreturn nuevos;"
+      },
+      "id": "dc176885-aca8-44eb-9304-59e744d05176",
+      "name": "Filtrar Solo Nuevos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9540, 1700],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5a59c2b4-7b02-488a-9bd5-17baab5414c3",
+              "leftValue": "={{ !!$json.idcita }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [9740, 1700],
+      "id": "681dc84d-4619-4cd4-bffc-68105e2a2744",
+      "name": "If",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refconcitas.helifyferdigital.cloud/api/n8n/inicio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": 1,\n  \"totalPacientesNuevos\": {{ $('Filtrar Solo Nuevos').all().length }}\n}",
+        "options": {}
+      },
+      "id": "upd00001-0000-0000-0000-000000000001",
+      "name": "Actualizar Total Pacientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [9960, 1580],
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "16d6de14-edd2-4d5a-8cdf-e19de5899388",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [10140, 1680]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const json = $input.item.json;\nconst check = (val) => {\n  if (!val || val.toString().trim() === \"\") return \"---\";\n  return val;\n};\nreturn {\n  json: {\n    ...json,\n    nomcomppac: check(json.nomcomppac),\n    numdocpaciente: check(json.numdocpaciente),\n    nombestdestino: check(json.nombestdestino),\n    especialidad: check(json.especialidad),\n    consultoriocita: check(json.consultoriocita),\n    medicocita: check(json.medicocita),\n    fechacita: check(json.fechacita),    \n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [10380, 1800],
+      "id": "ab93e371-8339-4505-81a0-94087255008e",
+      "name": "Corregir vacios",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/945930118610567/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAMaxbdwM5ABQug7l6Nx4LN8xDISSR1rp6N6mj9KpwVWwg1HIGnaBVVRVYXrnPqRYeRErMFKZAjTsBugSUfBqPBVH2ENtfZBkRFhDALJvQOeKAcqm4n0PHPhZAPqlRXStEkRSom983FtdntadnZAMkvpIy4tnQPTpbRFjdDnXJCe1Pk4cTFhQLuco1G4mLhpZCwZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"+51{{ $json.celularpac.toString().replace(/[^0-9]/g, '') }}\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"recordatorio_citas\",\n    \"language\": {\n      \"code\": \"es_PE\"\n    },\n    \"components\": [\n      {\n        \"type\": \"body\",\n        \"parameters\": [\n          { \"type\": \"text\", \"text\": \"{{ $json.nomcomppac.trim() }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.numdocpaciente }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.nombestdestino }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.especialidad }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.consultoriocita }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.medicocita }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.fechacita }}\" }\n        ]\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "2b9419dc-3e7d-4801-a1b4-e5b63efdd587",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10580, 1800],
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refconcitas.helifyferdigital.cloud/api/n8n/progreso",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": 1,\n  \"idCita\": \"{{ $node['Split In Batches'].json['idcita'] }}\",\n  \"idReferencia\": \"{{ $node['Split In Batches'].json['nroreferencia'] }}\",\n  \"nombrePaciente\": \"{{ $node['Split In Batches'].json['nomcomppac'] }}\",\n  \"dni\": \"{{ $node['Split In Batches'].json['numdocpaciente'] }}\",\n  \"celular\": \"{{ $node['Split In Batches'].json['celularpac'] }}\",\n  \"especialidad\": \"{{ $node['Split In Batches'].json['especialidad'] }}\",\n  \"fechaCita\": \"{{ $node['Split In Batches'].json['fechacita'] }}\",\n  \"establecimientoDestino\": \"{{ $node['Split In Batches'].json['nombestdestino'] }}\",\n  \"consultorio\": \"{{ $node['Split In Batches'].json['consultoriocita'] }}\",\n  \"medico\": \"{{ $node['Split In Batches'].json['medicocita'] }}\",\n  \"cuerpoMensaje\": \"CAM TAYTA WASI\\n- Paciente: {{ $node['Split In Batches'].json['nomcomppac'] }}\\n- DNI: {{ $node['Split In Batches'].json['numdocpaciente'] }}\\n- Destino: {{ $node['Split In Batches'].json['nombestdestino'] }}\\n- Servicio: {{ $node['Split In Batches'].json['especialidad'] }}\\n- Fecha: {{ $node['Split In Batches'].json['fechacita'] }}\",\n  \"estadoEnvio\": \"{{ $node['Enviar WhatsApp'].error ? 'Error' : 'Enviado' }}\",\n  \"mensajeError\": \"{{ $node['Enviar WhatsApp'].error ? $node['Enviar WhatsApp'].error.message : '' }}\"\n}",
+        "options": {}
+      },
+      "id": "cpg00001-0000-0000-0000-000000000001",
+      "name": "Callback Progreso",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10780, 1800],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1nOQ7h_N_NX0lWkIouonbbRnsc91VozoXDW-NMsPB5j4",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Registro_Envios",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idcita": "={{ $node[\"Split In Batches\"].json[\"idcita\"] }}",
+            "fecha_hora_envio": "={{ $now.setZone('America/Lima').format('yyyy-MM-dd HH:mm:ss') }}",
+            "fechacita": "={{ $node[\"Split In Batches\"].json[\"fechacita\"] }}",
+            "especialidad": "={{ $node[\"Split In Batches\"].json[\"especialidad\"] }}",
+            "estado_envio": "={{ $node[\"Enviar WhatsApp\"].error ? '❌ Error: ' + $node[\"Enviar WhatsApp\"].error.message : '✅ Enviado' }}",
+            "mensaje_enviado": "={{`CAM TAYTA WASI\n---------------------------------------------\n- Paciente: ${$node[\"Split In Batches\"].json[\"nomcomppac\"].trim()}\n- DNI: ${$node[\"Split In Batches\"].json[\"numdocpaciente\"]}\n---------------------------------------------\n- Establecimiento de Destino: ${$node[\"Split In Batches\"].json[\"nombestdestino\"]}\n- Servicio: ${$node[\"Split In Batches\"].json[\"especialidad\"]}\n- Consultorio: ${$node[\"Split In Batches\"].json[\"consultoriocita\"]}\n- Médico: ${$node[\"Split In Batches\"].json[\"medicocita\"]}\n- Fecha y Hora: *${$node[\"Split In Batches\"].json[\"fechacita\"]}*\n---------------------------------------------\n* Llegar media hora antes de la cita *`\n}}",
+            "Establecimiento de destino": "={{ $node[\"Split In Batches\"].json[\"nombestdestino\"] }}",
+            "Paciente": "={{ $node[\"Split In Batches\"].json[\"nomcomppac\"] }}",
+            "DNI": "={{ $node[\"Split In Batches\"].json[\"numdocpaciente\"] }}",
+            "Celular": "={{ $node[\"Split In Batches\"].json[\"celularpac\"] }}",
+            "IdReferencia": "={{ $node[\"Split In Batches\"].json[\"nroreferencia\"] }}"
+          },
+          "matchingColumns": [
+            "idcita"
+          ],
+          "schema": [
+            {"id": "idcita", "displayName": "idcita", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "IdReferencia", "displayName": "IdReferencia", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "DNI", "displayName": "DNI", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "Paciente", "displayName": "Paciente", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "Establecimiento de destino", "displayName": "Establecimiento de destino", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "especialidad", "displayName": "especialidad", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "fechacita", "displayName": "fechacita", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true},
+            {"id": "Celular", "displayName": "Celular", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "fecha_hora_envio", "displayName": "fecha_hora_envio", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true},
+            {"id": "mensaje_enviado", "displayName": "mensaje_enviado", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false},
+            {"id": "estado_envio", "displayName": "estado_envio", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false}
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "882cc25d-a09e-4f4c-9019-a693e4bb62e0",
+      "name": "Marcar como Enviado",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [10980, 1800],
+      "credentials": {
+        "googleApi": {
+          "id": "T41BoeSm3JUZt7Wi",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refconcitas.helifyferdigital.cloud/api/n8n/completado",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": 1\n}",
+        "options": {}
+      },
+      "id": "cco00001-0000-0000-0000-000000000001",
+      "name": "Callback Completado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10380, 1500],
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refconcitas.helifyferdigital.cloud/api/n8n/error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "refcon-n8n-secret-key-2025"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": 1,\n  \"etapa\": \"SinPacientes\",\n  \"mensaje\": \"No se encontraron pacientes nuevos para notificar. Todos ya recibieron su recordatorio.\"\n}",
+        "options": {}
+      },
+      "id": "csp00001-0000-0000-0000-000000000001",
+      "name": "Callback SinPacientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [10140, 2100],
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Programación Diaria": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Manual": {
+      "main": [
+        [
+          {
+            "node": "Set Manual Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Crear Peticion BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Manual Config": {
+      "main": [
+        [
+          {
+            "node": "Crear Peticion BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Peticion BD": {
+      "main": [
+        [
+          {
+            "node": "Validar Procesar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Procesar": {
+      "main": [
+        [
+          {
+            "node": "Paso 0: Inicializar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Paso 0: Inicializar": {
+      "main": [
+        [
+          {
+            "node": "Paso 1: VALIDARLOGIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paso 1: VALIDARLOGIN": {
+      "main": [
+        [
+          {
+            "node": "Acumular Cookies A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Callback Error: Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Callback Error: Login": {
+      "main": [[]]
+    },
+    "Acumular Cookies A": {
+      "main": [
+        [
+          {
+            "node": "Paso 2: LOGIN INIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paso 2: LOGIN INIT": {
+      "main": [
+        [
+          {
+            "node": "Verificar Byt Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Byt Final": {
+      "main": [
+        [
+          {
+            "node": "Obtener Pacientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Pacientes": {
+      "main": [
+        [
+          {
+            "node": "Parser: Lista de Pacientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser: Lista de Pacientes": {
+      "main": [
+        [
+          {
+            "node": "Obtener Enviados BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Enviados BD": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Solo Nuevos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Solo Nuevos": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Total Pacientes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Callback SinPacientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Total Pacientes": {
+      "main": [[]]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Callback Completado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Corregir vacios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Corregir vacios": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Callback Progreso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Callback Progreso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Callback Progreso": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Enviado": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Callback Completado": {
+      "main": [[]]
+    },
+    "Callback SinPacientes": {
+      "main": [[]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "98be8344-e6c6-537c-b1d7-7b64878739ff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5898de96dbaf394f74e2926a5edabb81750e4d669472d52734c7db35ea1f5ba3"
+  },
+  "id": "eV27TKYdHsq3hnY25Y5_9",
+  "tags": []
+}

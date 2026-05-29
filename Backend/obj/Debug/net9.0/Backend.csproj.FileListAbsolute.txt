@@ -81,3 +81,4 @@ C:\Users\PC-37\Desktop\PROYECTOS CFQY\refcon-citas\backend\obj\Debug\net9.0\Back
 C:\Users\PC-37\Desktop\PROYECTOS CFQY\refcon-citas\backend\obj\Debug\net9.0\Backend.genruntimeconfig.cache
 C:\Users\PC-37\Desktop\PROYECTOS CFQY\refcon-citas\backend\obj\Debug\net9.0\ref\Backend.dll
 C:\Users\PC-37\Desktop\PROYECTOS CFQY\refcon-citas\Backend\bin\Debug\net9.0\Scalar.AspNetCore.dll
+C:\Users\PC-37\Desktop\PROYECTOS CFQY\refcon-citas\Backend\obj\Debug\net9.0\Backend.sourcelink.json

@@ -12,5 +12,6 @@ namespace Backend.Models
         public string NombreEstablecimiento { get; set; } = null!;
         public string Estado { get; set; } = "Activo";
         public DateTime? FechaRegistro { get; set; }
+        public bool EnvioAutomatico { get; set; } = false;
     }
 }

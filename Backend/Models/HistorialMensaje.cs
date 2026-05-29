@@ -19,6 +19,8 @@ namespace Backend.Models
         public string CuerpoMensaje { get; set; } = null!;
         public string EstadoEnvio { get; set; } = "Enviado";
         public string? EstablecimientoDestino { get; set; }
+        public string? Consultorio { get; set; }
+        public string? Medico { get; set; }
 
         [ForeignKey("PeticionID")]
         public virtual PeticionEnvio PeticionEnvio { get; set; } = null!;

@@ -13,6 +13,9 @@ namespace Backend.Models
         public string Email { get; set; } = null!;
         public string ContrasenaHash { get; set; } = null!;
         public string Estado { get; set; } = "Activo";
+        public string Rol { get; set; } = "Usuario";
+        public string? UsuarioReferencial { get; set; }
+        public string? ClaveReferencial { get; set; }
 
         [ForeignKey("EstablecimientoID")]
         public virtual Establecimiento? Establecimiento { get; set; }
