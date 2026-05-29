@@ -81,7 +81,12 @@ namespace Backend.Controllers
             }
 
             peticion.EstadoProceso = "Procesando";
-            peticion.TotalPacientesNuevos = dto.TotalPacientesNuevos;
+            // Solo actualizamos TotalPacientesNuevos cuando el valor viene explícitamente.
+            // n8n llama a este endpoint dos veces:
+            //   1) Desde "Crear Peticion BD" (sin total) → solo valida/crea la petición.
+            //   2) Desde "Actualizar Total Pacientes" (con total real) → guarda el conteo correcto.
+            if (dto.TotalPacientesNuevos.HasValue)
+                peticion.TotalPacientesNuevos = dto.TotalPacientesNuevos;
 
             await _context.SaveChangesAsync();
 

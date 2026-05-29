@@ -72,7 +72,7 @@ namespace Backend.Controllers
             _context.PeticionesEnvio.Add(peticion);
             await _context.SaveChangesAsync();
 
-            // 3. Trigger webhook n8n
+            // 3. Trigger webhook n8n (fire-and-forget con timeout de 15 s)
             var webhookUrl = _configuration["N8nSettings:WebhookUrl"];
             if (!string.IsNullOrEmpty(webhookUrl))
             {
@@ -85,26 +85,46 @@ namespace Backend.Controllers
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                var peticionId = peticion.PeticionID;
+                var establId   = peticion.EstablecimientoID;
 
-                // Start fire-and-forget webhook call
                 _ = Task.Run(async () =>
                 {
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
                     try
                     {
-                        var response = await _httpClient.PostAsync(webhookUrl, content);
+                        var response = await _httpClient.PostAsync(webhookUrl, content, cts.Token);
                         if (!response.IsSuccessStatusCode)
                         {
-                            Console.WriteLine($"Webhook failed: {response.StatusCode}");
+                            Console.WriteLine($"[n8n] Webhook failed (HTTP {response.StatusCode}) para PeticionID={peticionId}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Webhook exception: {ex.Message}");
+                        Console.WriteLine($"[n8n] Webhook exception para PeticionID={peticionId}: {ex.Message}");
+                        // Marcar la petición como Error para que no quede pegada en "Pendiente"
+                        try
+                        {
+                            var pet = await _context.PeticionesEnvio.FindAsync(peticionId);
+                            if (pet != null && (pet.EstadoProceso == "Pendiente" || pet.EstadoProceso == "Procesando"))
+                            {
+                                pet.EstadoProceso     = "Error";
+                                pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
+                                pet.EtapaError        = "Conexion_N8n";
+                                pet.FechaFinalizacion = DateTime.UtcNow;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                        catch (Exception dbEx)
+                        {
+                            Console.WriteLine($"[n8n] Error al actualizar peticion en BD: {dbEx.Message}");
+                        }
                     }
                 });
             }
 
             return Ok(new { message = "Envío de recordatorios iniciado.", PeticionID = peticion.PeticionID });
+
         }
 
         [HttpGet("status")]
