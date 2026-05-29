@@ -23,6 +23,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/historical',
+      name: 'historical',
+      component: () => import('../views/HistoricalDashboard.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/history',
       name: 'history',
       component: History,

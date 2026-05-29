@@ -1,0 +1,28 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ejecutar despliegue por SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            # Nos movemos a la carpeta del proyecto en tu VPS
+            cd /var/www/refcon-citas
+            
+            # Forzamos que el código sea exactamente igual al de GitHub
+            git fetch --all
+            git reset --hard origin/master
+            
+            # Reconstruimos los contenedores (Frontend y Backend) con los nuevos cambios
+            docker compose down
+            docker compose up -d --build

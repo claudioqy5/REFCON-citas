@@ -2,20 +2,38 @@
   <div class="app-layout" :class="{ 'has-sidebar': authStore.isAuthenticated && !authStore.isAdmin }">
     <nav v-if="authStore.isAuthenticated" :class="authStore.isAdmin ? 'navbar glass-panel' : 'sidebar glass-panel'">
       <div class="nav-brand">
-        🩺 Recordatorios
+        <span class="brand-icon">🩺</span>
+        <span class="brand-text">REFCON</span>
+        <span class="brand-text">citas</span>
       </div>
       <div class="nav-links">
-        <router-link to="/">Dashboard</router-link>
-        <router-link to="/patients">Pacientes</router-link>
-        <router-link to="/history">Historial</router-link>
+        <router-link to="/">
+          <span class="link-icon">📊</span>
+          <span class="link-text">Inicio</span>
+        </router-link>
+        <router-link to="/historical">
+          <span class="link-icon">📈</span>
+          <span class="link-text">Histórico</span>
+        </router-link>
+        <router-link to="/patients">
+          <span class="link-icon">👥</span>
+          <span class="link-text">Pacientes</span>
+        </router-link>
+        <router-link to="/history">
+          <span class="link-icon">📜</span>
+          <span class="link-text">Historial</span>
+        </router-link>
         
         <template v-if="authStore.isAdmin">
           <div class="divider"></div>
-          <router-link to="/admin/establecimientos" class="admin-link">🏢 Establecimientos</router-link>
-          <router-link to="/admin/usuarios" class="admin-link">👥 Usuarios</router-link>
+          <router-link to="/admin/establecimientos" class="admin-link">🏢 <span class="link-text">Establecimientos</span></router-link>
+          <router-link to="/admin/usuarios" class="admin-link">👥 <span class="link-text">Usuarios</span></router-link>
         </template>
 
-        <button @click="logout" class="btn btn-logout">Salir</button>
+        <button @click="logout" class="btn btn-logout">
+          <span class="link-icon">🚪</span>
+          <span class="link-text">Salir</span>
+        </button>
       </div>
     </nav>
     <main class="main-content">
@@ -68,34 +86,87 @@ const logout = () => {
   color: var(--primary-color);
 }
 
-/* Sidebar style (vertical for normal Tenants - on the right) */
+/* Sidebar style (vertical for normal Tenants) */
 .app-layout.has-sidebar {
   flex-direction: row;
 }
 .sidebar {
-  width: 260px;
+  width: 78px; /* Sleek, minimal width when not hovered */
   height: calc(100vh - 2rem);
   margin: 1rem;
-  padding: 2rem 1.25rem;
+  padding: 2rem 0.5rem; /* Balanced horizontal padding */
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   gap: 2rem;
   position: sticky;
   top: 1rem;
   border-radius: 16px;
   flex-shrink: 0;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
 }
+
+/* Beautiful hover expanding effect */
+.sidebar:hover {
+  width: 260px;
+  padding: 2rem 1.25rem;
+  align-items: flex-start;
+  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.08);
+}
+
+/* Brand header */
 .sidebar .nav-brand {
   font-weight: 700;
   font-size: 1.2rem;
   color: var(--primary-color);
   width: 100%;
-  text-align: center;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
+
+.sidebar:hover .nav-brand {
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+}
+
+.brand-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar .brand-text {
+  opacity: 0;
+  max-width: 0;
+  display: inline-block;
+  overflow: hidden;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-size: 1.2rem;
+  font-weight: 700;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.sidebar:hover .brand-text {
+  opacity: 1;
+  max-width: 150px;
+  margin-left: 0.75rem;
+  transform: translateX(0);
+}
+
+/* Sidebar Links */
 .sidebar .nav-links {
   display: flex;
   flex-direction: column;
@@ -108,18 +179,69 @@ const logout = () => {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
+  padding: 0.75rem;
+  border-radius: 10px;
   width: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Perfectly center icons when collapsed */
+  white-space: nowrap;
+  box-sizing: border-box;
 }
+
+.sidebar:hover .nav-links a {
+  justify-content: flex-start;
+  padding: 0.75rem 1rem;
+}
+
 .sidebar .nav-links a:hover, .sidebar .nav-links a.router-link-active {
   background: var(--primary-light);
   color: var(--primary-color);
 }
+
+.link-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* Fix icon width to ensure perfectly centered alignment */
+  height: 24px;
+}
+
+.sidebar .link-text {
+  opacity: 0;
+  max-width: 0;
+  display: inline-block;
+  overflow: hidden;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.sidebar:hover .link-text {
+  opacity: 1;
+  max-width: 150px;
+  margin-left: 1rem;
+  transform: translateX(0);
+}
+
+/* Logout Button */
 .sidebar .btn-logout {
   margin-top: auto; /* Pushes logout to the bottom */
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.sidebar:hover .btn-logout {
+  justify-content: flex-start;
+  padding: 0.75rem 1rem;
 }
 
 .nav-brand {
@@ -140,6 +262,7 @@ const logout = () => {
 .admin-link:hover, .admin-link.router-link-active {
   color: var(--primary-color) !important;
 }
+
 .btn-logout {
   background: transparent;
   border: 1px solid var(--border-color);
