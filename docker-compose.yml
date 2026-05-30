@@ -27,6 +27,7 @@ services:
       ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=SistemaRecordatoriosSaaS;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
       JwtSettings__Secret: "${JWT_SECRET}"
       N8nSettings__WebhookUrl: "${N8N_WEBHOOK_URL}"
+      N8nSettings__ApiKey: "${N8N_API_KEY}"
       AdminSettings__AdminEmail: "${ADMIN_EMAIL}"
     # No need to expose ports to the host since frontend proxies internally,
     # keeping the backend highly secure. We only expose it if needed.
