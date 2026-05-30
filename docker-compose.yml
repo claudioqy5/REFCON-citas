@@ -19,6 +19,8 @@ services:
     restart: always
     depends_on:
       - sqlserver
+    extra_hosts:
+      - "host-gateway:host-gateway"
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=SistemaRecordatoriosSaaS;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;"
       JwtSettings__Secret: "${JWT_SECRET}"

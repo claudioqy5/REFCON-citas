@@ -3,6 +3,7 @@ using Backend.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -17,12 +18,14 @@ namespace Backend.Controllers
         private readonly AppDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public RemindersController(AppDbContext context, HttpClient httpClient, IConfiguration configuration)
+        public RemindersController(AppDbContext context, HttpClient httpClient, IConfiguration configuration, IServiceScopeFactory scopeFactory)
         {
             _context = context;
             _httpClient = httpClient;
             _configuration = configuration;
+            _scopeFactory = scopeFactory;
         }
 
         private int GetEstablecimientoID()
@@ -105,14 +108,18 @@ namespace Backend.Controllers
                         // Marcar la petición como Error para que no quede pegada en "Pendiente"
                         try
                         {
-                            var pet = await _context.PeticionesEnvio.FindAsync(peticionId);
-                            if (pet != null && (pet.EstadoProceso == "Pendiente" || pet.EstadoProceso == "Procesando"))
+                            using (var scope = _scopeFactory.CreateScope())
                             {
-                                pet.EstadoProceso     = "Error";
-                                pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
-                                pet.EtapaError        = "Conexion_N8n";
-                                pet.FechaFinalizacion = DateTime.UtcNow;
-                                await _context.SaveChangesAsync();
+                                var scopedContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                                var pet = await scopedContext.PeticionesEnvio.FindAsync(peticionId);
+                                if (pet != null && (pet.EstadoProceso == "Pendiente" || pet.EstadoProceso == "Procesando"))
+                                {
+                                    pet.EstadoProceso     = "Error";
+                                    pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
+                                    pet.EtapaError        = "Conexion_N8n";
+                                    pet.FechaFinalizacion = DateTime.UtcNow;
+                                    await scopedContext.SaveChangesAsync();
+                                }
                             }
                         }
                         catch (Exception dbEx)
