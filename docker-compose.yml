@@ -19,6 +19,9 @@ services:
     restart: always
     depends_on:
       - sqlserver
+    networks:
+      - default
+      - bridge_net
     extra_hosts:
       - "host-gateway:host-gateway"
     environment:
@@ -37,8 +40,16 @@ services:
     restart: always
     depends_on:
       - backend
+    networks:
+      - default
     ports:
       - "${FRONTEND_PORT:-8085}:80"
 
 volumes:
   mssql-data:
+
+networks:
+  default:
+  bridge_net:
+    external: true
+    name: bridge
