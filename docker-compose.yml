@@ -21,7 +21,6 @@ services:
       - sqlserver
     networks:
       - default
-      - bridge_net
     extra_hosts:
       - "host-gateway:host-gateway"
     environment:
@@ -47,9 +46,3 @@ services:
 
 volumes:
   mssql-data:
-
-networks:
-  default:
-  bridge_net:
-    external: true
-    name: bridge
