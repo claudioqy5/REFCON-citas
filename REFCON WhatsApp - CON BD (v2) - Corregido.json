@@ -12,13 +12,13 @@
           ]
         }
       },
-      "id": "9ce82ee0-b173-4e5a-8a55-a949f4240558",
+      "id": "be1b3878-985b-4986-aaac-252a93855660",
       "name": "Programación Diaria",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
-        -1888,
-        992
+        -272,
+        2464
       ]
     },
     {
@@ -27,15 +27,16 @@
         "path": "refcon-trigger",
         "options": {}
       },
-      "id": "f6cc1a6f-e9cb-451d-a06b-3878027096a2",
+      "id": "a1c96ad8-a43a-439f-a229-0cd0019edb7c",
       "name": "Webhook Manual",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1888,
-        1168
+        -272,
+        2640
       ],
-      "webhookId": "94c03c7a-a559-4362-8526-d82035d99e6f"
+      "webhookId": "94c03c7a-a559-4362-8526-d82035d99e6f",
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -81,13 +82,13 @@
         },
         "options": {}
       },
-      "id": "e4523446-b735-4e01-a26c-bebd3ba72fee",
+      "id": "0228c415-e029-4a8c-a3ae-8eb32da31dee",
       "name": "Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1680,
-        992
+        -64,
+        2464
       ]
     },
     {
@@ -134,13 +135,13 @@
         },
         "options": {}
       },
-      "id": "cbd55834-5afb-4b8c-b3f9-c0bf6eed7424",
+      "id": "29975b83-43e0-47a4-9428-4cc680081401",
       "name": "Set Manual Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1680,
-        1168
+        -64,
+        2640
       ]
     },
     {
@@ -165,13 +166,13 @@
         "jsonBody": "={\n  \"establecimientoId\": {{ $json.establecimientoId }},\n  \"peticionId\": {{ $json.peticionId ? $json.peticionId : \"null\" }}\n}",
         "options": {}
       },
-      "id": "9a28130f-3ed9-4473-8914-a43e0f7a87b6",
+      "id": "2837d1a7-b33c-44a3-ab18-9b50f86e74cd",
       "name": "Crear Peticion BD",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1456,
-        1088
+        160,
+        2560
       ]
     },
     {
@@ -199,19 +200,20 @@
         },
         "options": {}
       },
-      "id": "b8fa52b1-0af4-497b-916b-f98cece28db6",
+      "id": "0ad0e9c3-5692-4306-81f0-c3efcaa82c95",
       "name": "Validar Procesar",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1264,
-        1088
+        352,
+        2560
       ]
     },
     {
       "parameters": {
         "url": "https://refcon.minsa.gob.pe/refconv02/",
         "options": {
+          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
           "response": {
             "response": {
               "fullResponse": true
@@ -219,15 +221,16 @@
           }
         }
       },
-      "id": "8b005c10-980b-4f0c-8170-3fc0d638df24",
+      "id": "25380ca4-3b36-4ebb-b267-1c2f6468c261",
       "name": "Paso 0: Inicializar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1024,
-        1008
+        592,
+        2480
       ],
-      "retryOnFail": true
+      "retryOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -276,6 +279,7 @@
           ]
         },
         "options": {
+          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
           "response": {
             "response": {
               "fullResponse": true
@@ -283,13 +287,13 @@
           }
         }
       },
-      "id": "f586184c-4dcb-4101-bb20-a0537b995658",
+      "id": "f23b280c-315c-4bf5-ad22-ac49c07355c5",
       "name": "Paso 1: VALIDARLOGIN",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -816,
-        1008
+        800,
+        2480
       ],
       "onError": "continueErrorOutput"
     },
@@ -315,13 +319,13 @@
         "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": {{ $('Set Manual Config').item.json.establecimientoId || $('Config').item.json.establecimientoId }},\n  \"etapa\": \"RefconLogin\",\n  \"mensaje\": \"Error al iniciar sesión en REFCON. Verifique las credenciales (usuario/contraseña).\"\n}",
         "options": {}
       },
-      "id": "7219b6fb-36c3-4261-882c-0e5752897d81",
+      "id": "4cec9bf4-89bf-40fa-ae49-647a1b28258d",
       "name": "Callback Error: Login",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -624,
-        1232
+        992,
+        2704
       ],
       "onError": "continueRegularOutput"
     },
@@ -329,13 +333,13 @@
       "parameters": {
         "jsCode": "const s0 = $('Paso 0: Inicializar').first().json.headers['set-cookie'] || [];\nconst s1 = $('Paso 1: VALIDARLOGIN').first().json.headers['set-cookie'] || [];\n\nconst map = {};\n[...s0, ...s1].forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ') } }];"
       },
-      "id": "6f666ddc-d3b0-4fe6-9244-4059fb580521",
+      "id": "b91e4bc3-763a-4b8d-9100-1d3813cc830e",
       "name": "Acumular Cookies A",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -624,
-        1008
+        992,
+        2480
       ]
     },
     {
@@ -391,6 +395,7 @@
           ]
         },
         "options": {
+          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
           "response": {
             "response": {
               "fullResponse": true
@@ -398,26 +403,26 @@
           }
         }
       },
-      "id": "3e5c81b3-90c7-41ae-a841-eb9594491499",
+      "id": "001f4e3b-2cf1-4c83-8f59-0c690b8e24af",
       "name": "Paso 2: LOGIN INIT",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -416,
-        1008
+        1200,
+        2480
       ]
     },
     {
       "parameters": {
         "jsCode": "const prev = $('Acumular Cookies A').first().json.cookies;\nconst s2 = $('Paso 2: LOGIN INIT').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprev.split('; ').forEach(c => { const p = c.split('='); if(p.length>=2) map[p[0]] = p[1]; });\ns2.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ');\nreturn [{ json: { cookieString, hasByt: !!map['byt'] } }];"
       },
-      "id": "0f56df4e-21d9-4158-9c6c-fe0140cd3381",
+      "id": "5feb29a8-31f0-4b16-8a1f-cb611b27ce7c",
       "name": "Verificar Byt Final",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -224,
-        1008
+        1392,
+        2480
       ]
     },
     {
@@ -504,28 +509,30 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80"
+        }
       },
-      "id": "eb119ecf-e2b7-4325-83b9-51e65602f081",
+      "id": "20381c88-3e07-4908-bf46-f94b4977fa1f",
       "name": "Obtener Pacientes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        0,
-        1008
+        1616,
+        2480
       ]
     },
     {
       "parameters": {
         "jsCode": "const data = items[0].json.data;\ntry {\n  const response = JSON.parse(data);\n  return response.items.map(p => ({ json: p }));\n} catch (e) {\n  throw new Error('El servidor de REFCON respondió con error: ' + data);\n}"
       },
-      "id": "7b6071b8-3747-45a5-8d3b-9413300b743f",
+      "id": "4a7c3ef6-c953-4485-843c-94a6cfe9f9fc",
       "name": "Parser: Lista de Pacientes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        208,
-        1008
+        1824,
+        2480
       ]
     },
     {
@@ -551,13 +558,13 @@
         },
         "options": {}
       },
-      "id": "7ceb29bc-d11e-4890-8b7f-e3bfb7227196",
+      "id": "6e5a750d-b8d6-4809-a744-4cdc49ff71bd",
       "name": "Obtener Enviados BD",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        400,
-        1008
+        2016,
+        2480
       ],
       "executeOnce": true,
       "alwaysOutputData": true
@@ -566,13 +573,13 @@
       "parameters": {
         "jsCode": "const pacientesRefcon = $('Parser: Lista de Pacientes').all();\nconst responseEnviados = $('Obtener Enviados BD').first().json;\nconst idsEnviados = new Set((responseEnviados.ids || []).map(id => String(id)));\n\nconst nuevos = pacientesRefcon.filter(p => !idsEnviados.has(String(p.json.idcita)));\nreturn nuevos;"
       },
-      "id": "c73cd34a-3199-4929-b239-00292ebbeaa8",
+      "id": "007add65-a30c-41c8-8c49-ed7b17055126",
       "name": "Filtrar Solo Nuevos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        608,
-        1008
+        2224,
+        2480
       ],
       "alwaysOutputData": true
     },
@@ -604,10 +611,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        800,
-        1008
+        2416,
+        2480
       ],
-      "id": "781c7006-6234-4eba-b607-e37cf6e9b7de",
+      "id": "83044fda-9ed8-4356-9258-0b420ba6f5dd",
       "name": "If",
       "executeOnce": false
     },
@@ -633,13 +640,13 @@
         "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": {{ $('Set Manual Config').item.json.establecimientoId || $('Config').item.json.establecimientoId }},\n  \"totalPacientesNuevos\": {{ $('Filtrar Solo Nuevos').all().length }}\n}",
         "options": {}
       },
-      "id": "783170ce-9b61-4f2f-a4f3-d31163591561",
+      "id": "1a2130c1-0592-49b6-90f8-036761d840a3",
       "name": "Actualizar Total Pacientes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1024,
-        880
+        2640,
+        2352
       ],
       "executeOnce": true,
       "onError": "continueRegularOutput"
@@ -648,13 +655,13 @@
       "parameters": {
         "options": {}
       },
-      "id": "e7786f74-1e51-4427-8050-0aac4cc2c040",
+      "id": "89d07aeb-c084-45bc-8c19-91349b121aed",
       "name": "Split In Batches",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1200,
-        992
+        2816,
+        2464
       ]
     },
     {
@@ -665,10 +672,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        1104
+        3056,
+        2576
       ],
-      "id": "7b875eda-b229-4ba4-8517-fea1cbdb7ed0",
+      "id": "326d4bf3-0b0a-4eb1-af26-0c4409c379a0",
       "name": "Corregir vacios",
       "alwaysOutputData": false
     },
@@ -690,13 +697,13 @@
         "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"+51{{ $json.celularpac.toString().replace(/[^0-9]/g, '') }}\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"recordatorio_citas\",\n    \"language\": {\n      \"code\": \"es_PE\"\n    },\n    \"components\": [\n      {\n        \"type\": \"body\",\n        \"parameters\": [\n          { \"type\": \"text\", \"text\": \"{{ $json.nomcomppac.trim() }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.numdocpaciente }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.nombestdestino }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.especialidad }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.consultoriocita }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.medicocita }}\" },\n          { \"type\": \"text\", \"text\": \"{{ $json.fechacita }}\" }\n        ]\n      }\n    ]\n  }\n}",
         "options": {}
       },
-      "id": "c3cb7f5d-d7b0-4e7b-b14b-5dc24411b825",
+      "id": "a3188c55-dbc7-4ccf-94c9-01de0a16b2af",
       "name": "Enviar WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1648,
-        1104
+        3264,
+        2576
       ],
       "executeOnce": false,
       "alwaysOutputData": true,
@@ -724,13 +731,13 @@
         "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": {{ $('Set Manual Config').item.json.establecimientoId || $('Config').item.json.establecimientoId }},\n  \"idCita\": \"{{ $node['Split In Batches'].json['idcita'] }}\",\n  \"idReferencia\": \"{{ $node['Split In Batches'].json['nroreferencia'] }}\",\n  \"nombrePaciente\": \"{{ $node['Split In Batches'].json['nomcomppac'] }}\",\n  \"dni\": \"{{ $node['Split In Batches'].json['numdocpaciente'] }}\",\n  \"celular\": \"{{ $node['Split In Batches'].json['celularpac'] }}\",\n  \"especialidad\": \"{{ $node['Split In Batches'].json['especialidad'] }}\",\n  \"fechaCita\": \"{{ $node['Split In Batches'].json['fechacita'] }}\",\n  \"establecimientoDestino\": \"{{ $node['Split In Batches'].json['nombestdestino'] }}\",\n  \"consultorio\": \"{{ $node['Split In Batches'].json['consultoriocita'] }}\",\n  \"medico\": \"{{ $node['Split In Batches'].json['medicocita'] }}\",\n  \"cuerpoMensaje\": \"CAM TAYTA WASI\\n- Paciente: {{ $node['Split In Batches'].json['nomcomppac'] }}\\n- DNI: {{ $node['Split In Batches'].json['numdocpaciente'] }}\\n- Destino: {{ $node['Split In Batches'].json['nombestdestino'] }}\\n- Servicio: {{ $node['Split In Batches'].json['especialidad'] }}\\n- Fecha: {{ $node['Split In Batches'].json['fechacita'] }}\",\n  \"estadoEnvio\": \"{{ $node['Enviar WhatsApp'].error ? 'Error' : 'Enviado' }}\",\n  \"mensajeError\": \"{{ $node['Enviar WhatsApp'].error ? $node['Enviar WhatsApp'].error.message : '' }}\"\n}",
         "options": {}
       },
-      "id": "65ae3c7d-d893-417f-a41d-e578e519bd21",
+      "id": "200e596b-bc32-4746-9805-c7cec3e67adf",
       "name": "Callback Progreso",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1840,
-        1104
+        3456,
+        2576
       ],
       "onError": "continueRegularOutput"
     },
@@ -881,13 +888,13 @@
         },
         "options": {}
       },
-      "id": "a265566a-2faa-4db3-9045-b42eeb391039",
+      "id": "b8467705-bc94-477f-8862-39bf79363388",
       "name": "Marcar como Enviado",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        2048,
-        1104
+        3664,
+        2576
       ],
       "disabled": true
     },
@@ -913,13 +920,13 @@
         "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": {{ $('Set Manual Config').item.json.establecimientoId || $('Config').item.json.establecimientoId }}\n}",
         "options": {}
       },
-      "id": "de5dc452-b688-4ee0-a3af-a9d92e459be3",
+      "id": "d06edc07-c695-4431-8861-c5b4a01001f1",
       "name": "Callback Completado",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1440,
-        800
+        3056,
+        2272
       ],
       "executeOnce": true,
       "onError": "continueRegularOutput"
@@ -946,13 +953,13 @@
         "jsonBody": "={\n  \"peticionId\": {{ $('Crear Peticion BD').first().json.peticionId }},\n  \"establecimientoId\": {{ $('Set Manual Config').item.json.establecimientoId || $('Config').item.json.establecimientoId }},\n  \"etapa\": \"SinPacientes\",\n  \"mensaje\": \"No se encontraron pacientes nuevos para notificar. Todos ya recibieron su recordatorio.\"\n}",
         "options": {}
       },
-      "id": "f5fcc36e-113e-4406-b810-177ab78b72c4",
+      "id": "9f9d8612-7aa6-4e48-857c-b2fd5ca849ae",
       "name": "Callback SinPacientes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
-        1408
+        2816,
+        2880
       ],
       "executeOnce": true,
       "onError": "continueRegularOutput"
@@ -1228,9 +1235,12 @@
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "a7726833-cc92-4b07-826d-1e085cffd840",
+  "versionId": "207163f9-b5c9-4e61-be87-75363e87181d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "69e4c8942dd7c32850993b6fc4b0d709343dc96bdf5f39a16db56eb7c385a8ae"
