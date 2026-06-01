@@ -93,12 +93,9 @@ namespace Backend.Controllers
 
                 _ = Task.Run(async () =>
                 {
-                    using var scope = _scopeFactory.CreateScope();
-                    var scopedContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
                     try
                     {
+                        using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(15));
                         using var client = new HttpClient();
                         var response = await client.PostAsync(webhookUrl, content, cts.Token);
                         if (!response.IsSuccessStatusCode)
@@ -112,14 +109,18 @@ namespace Backend.Controllers
                         // Marcar la petición como Error para que no quede pegada en "Pendiente"
                         try
                         {
-                            var pet = await scopedContext.PeticionesEnvio.FindAsync(peticionId);
-                            if (pet != null && (pet.EstadoProceso == "Pendiente" || pet.EstadoProceso == "Procesando"))
+                            using (var scope = _scopeFactory.CreateScope())
                             {
-                                pet.EstadoProceso     = "Error";
-                                pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
-                                pet.EtapaError        = "Conexion_N8n";
-                                pet.FechaFinalizacion = DateTime.UtcNow;
-                                await scopedContext.SaveChangesAsync();
+                                var scopedContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                                var pet = await scopedContext.PeticionesEnvio.FindAsync(peticionId);
+                                if (pet != null && (pet.EstadoProceso == "Pendiente" || pet.EstadoProceso == "Procesando"))
+                                {
+                                    pet.EstadoProceso     = "Error";
+                                    pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
+                                    pet.EtapaError        = "Conexion_N8n";
+                                    pet.FechaFinalizacion = DateTime.UtcNow;
+                                    await scopedContext.SaveChangesAsync();
+                                }
                             }
                         }
                         catch (Exception dbEx)
