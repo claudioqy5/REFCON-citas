@@ -213,7 +213,7 @@
       "parameters": {
         "url": "https://refcon.minsa.gob.pe/refconv02/",
         "options": {
-          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321",
           "response": {
             "response": {
               "fullResponse": true
@@ -279,7 +279,7 @@
           ]
         },
         "options": {
-          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321",
           "response": {
             "response": {
               "fullResponse": true
@@ -395,7 +395,7 @@
           ]
         },
         "options": {
-          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80",
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321",
           "response": {
             "response": {
               "fullResponse": true
@@ -510,7 +510,7 @@
           ]
         },
         "options": {
-          "proxy": "=http://bdgxlfgi-es-8-session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}:vd54xgpo19wn@p.webshare.io:80"
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321"
         }
       },
       "id": "20381c88-3e07-4908-bf46-f94b4977fa1f",
