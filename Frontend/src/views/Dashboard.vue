@@ -87,14 +87,6 @@
             <h2>Envío Automático</h2>
             <p class="subtitle">Inicia el flujo de envío de recordatorios de citas vía WhatsApp</p>
           </div>
-          <button 
-            @click="triggerReminders" 
-            class="btn btn-primary trigger-btn"
-            :disabled="isProcessing"
-          >
-            <span v-if="isProcessing" class="spinner"></span>
-            {{ isProcessing ? 'Procesando...' : '▶ Iniciar Envío' }}
-          </button>
         </div>
 
         <!-- CONFIGURACIÓN DE ENVÍO AUTOMÁTICO -->

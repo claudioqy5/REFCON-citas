@@ -36,7 +36,7 @@
             </select>
           </div>
           <div class="filter-item action-item">
-            <button @click="clearFilters" class="btn btn-clear">Limpiar</button>
+            <button @click="clearFilters" class="btn btn-clear">Mostrar todo</button>
           </div>
         </div>
       </div>
