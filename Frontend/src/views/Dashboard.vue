@@ -197,11 +197,15 @@
             <h3>Distribución por Especialidad</h3>
             <p class="chart-subtitle">Especialidades con mayor número de envíos</p>
           </div>
-          <!-- Day Date Picker -->
+          <!-- Day / Week Date Picker -->
           <div class="chart-filter-wrapper specialty-filter">
             <label class="filter-toggle">
-              <input type="checkbox" v-model="filterSpecialtyByDay" />
+              <input type="checkbox" v-model="filterSpecialtyByDay" @change="if(filterSpecialtyByDay) filterSpecialtyByWeek = false" />
               <span class="toggle-label">Por día</span>
+            </label>
+            <label class="filter-toggle">
+              <input type="checkbox" v-model="filterSpecialtyByWeek" @change="if(filterSpecialtyByWeek) filterSpecialtyByDay = false" />
+              <span class="toggle-label">Por semana</span>
             </label>
             <input 
               type="date" 
@@ -209,6 +213,12 @@
               v-model="selectedDay" 
               :min="selectedWeekRange.min"
               :max="selectedWeekRange.max"
+              class="picker-input date-picker" 
+            />
+            <input 
+              type="week" 
+              v-if="filterSpecialtyByWeek" 
+              v-model="selectedSpecialtyWeek" 
               class="picker-input date-picker" 
             />
           </div>
@@ -457,9 +467,11 @@ const barColors = [
   '#14b8a6'  // Domingo (Teal)
 ]
 
-// Specialty Day Filters
+// Specialty Day & Week Filters
 const filterSpecialtyByDay = ref(false)
+const filterSpecialtyByWeek = ref(false)
 const selectedDay = ref(new Date().toISOString().split('T')[0])
+const selectedSpecialtyWeek = ref(getISOWeek(new Date()))
 
 // Compute min and max days for the currently selected week
 const selectedWeekRange = computed(() => {
@@ -547,9 +559,11 @@ const topSpecialties = computed(() => {
           const itemDayStr = new Date(item.fechaHoraEnvio).toISOString().split('T')[0]
           matches = (itemDayStr === selectedDay.value)
         }
+      } else if (filterSpecialtyByWeek.value) {
+        matches = isDateInSelectedWeek(item.fechaHoraEnvio, selectedSpecialtyWeek.value)
       } else {
-        // By default, match only the week currently selected in weekly chart
-        matches = isDateInSelectedWeek(item.fechaHoraEnvio, selectedWeek.value)
+        // By default, if neither is explicitly checked, we show the overall historic distribution
+        matches = true
       }
       
       if (matches) {
@@ -560,7 +574,7 @@ const topSpecialties = computed(() => {
   return Object.keys(specMap).map(name => ({
     name,
     count: specMap[name]
-  })).sort((a, b) => b.count - a.count).slice(0, 5) // Grab up to 5 top specialties
+  })).sort((a, b) => b.count - a.count) // Removed .slice(0, 5) to show all specialties
 })
 
 const specialtiesTotalMessages = computed(() => {
