@@ -168,10 +168,26 @@ namespace Backend.Controllers
             DateTime fechaCita = DateTime.MinValue;
             if (!string.IsNullOrWhiteSpace(dto.FechaCita))
             {
-                var formatos = new[] { "dd/MM/yyyy HH:mm", "dd/MM/yyyy", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
-                DateTime.TryParseExact(dto.FechaCita, formatos,
+                var formatos = new[] { 
+                    "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy H:mm:ss", "d/M/yyyy H:mm:ss", "d/M/yyyy HH:mm:ss",
+                    "dd/MM/yyyy HH:mm", "dd/MM/yyyy", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" 
+                };
+                if (!DateTime.TryParseExact(dto.FechaCita, formatos,
                     System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None, out fechaCita);
+                    System.Globalization.DateTimeStyles.None, out fechaCita))
+                {
+                    // Fallback a parseo general si falla el exacto
+                    if (!DateTime.TryParse(dto.FechaCita, out fechaCita))
+                    {
+                        fechaCita = new DateTime(1753, 1, 1);
+                    }
+                }
+            }
+
+            // Garantizar que la fecha esté en el rango válido para SQL Server DATETIME (mínimo 1753-01-01)
+            if (fechaCita < new DateTime(1753, 1, 1))
+            {
+                fechaCita = new DateTime(1753, 1, 1);
             }
 
             // 4. Registrar en HistorialMensajes
