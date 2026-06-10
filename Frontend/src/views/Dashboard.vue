@@ -200,11 +200,11 @@
           <!-- Day / Week Date Picker -->
           <div class="chart-filter-wrapper specialty-filter">
             <label class="filter-toggle">
-              <input type="checkbox" v-model="filterSpecialtyByDay" @change="if(filterSpecialtyByDay) filterSpecialtyByWeek = false" />
+              <input type="checkbox" v-model="filterSpecialtyByDay" @change="filterSpecialtyByDay ? (filterSpecialtyByWeek = false) : null" />
               <span class="toggle-label">Por día</span>
             </label>
             <label class="filter-toggle">
-              <input type="checkbox" v-model="filterSpecialtyByWeek" @change="if(filterSpecialtyByWeek) filterSpecialtyByDay = false" />
+              <input type="checkbox" v-model="filterSpecialtyByWeek" @change="filterSpecialtyByWeek ? (filterSpecialtyByDay = false) : null" />
               <span class="toggle-label">Por semana</span>
             </label>
             <input 
