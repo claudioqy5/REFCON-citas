@@ -190,7 +190,10 @@ namespace Backend.Controllers
                 fechaCita = new DateTime(1753, 1, 1);
             }
 
-            // 4. Registrar en HistorialMensajes
+            // 4. Registrar en HistorialMensajes (usar hora local de Perú UTC-5)
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+            DateTime horaPeru = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
+
             var historial = new HistorialMensaje
             {
                 PeticionID        = dto.PeticionId,
@@ -200,7 +203,7 @@ namespace Backend.Controllers
                 IdReferencia      = dto.IdReferencia,
                 Especialidad      = dto.Especialidad ?? "---",
                 FechaCita         = fechaCita,
-                FechaHoraEnvio    = DateTime.UtcNow,
+                FechaHoraEnvio    = horaPeru,
                 CuerpoMensaje     = dto.CuerpoMensaje ?? "",
                 EstadoEnvio       = dto.EstadoEnvio,
                 EstablecimientoDestino = dto.EstablecimientoDestino,
