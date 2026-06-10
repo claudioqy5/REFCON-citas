@@ -7,11 +7,11 @@ namespace Backend.Models
     public class HistorialMensaje
     {
         [Key]
-        public int MensajeID { get; set; }
-        public int PeticionID { get; set; }
-        public int EstablecimientoID { get; set; }
-        public int PacienteID { get; set; }
-        public string IdCita { get; set; } = null!;
+            public int MensajeID { get; set; }
+            public int PeticionID { get; set; }
+            public int EstablecimientoID { get; set; }
+            public int PacienteID { get; set; }
+            public string IdCita { get; set; } = null!;
         public string? IdReferencia { get; set; }
         public string Especialidad { get; set; } = null!;
         public DateTime FechaCita { get; set; }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\Backend.csproj": {}
+    "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\Backend.csproj": {
+    "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\Backend.csproj",
+        "projectUniqueName": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\Backend.csproj",
+        "projectPath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj",
         "packagesPath": "C:\\Users\\FAMHURP\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\obj\\",
+        "outputPath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\FAMHURP\\AppData\\Roaming\\NuGet\\NuGet.Config",

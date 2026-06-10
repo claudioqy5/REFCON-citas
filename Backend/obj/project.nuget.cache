@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mEJ1OqJZi5k=",
+  "dgSpecHash": "eKfnR0fr/hs=",
   "success": true,
-  "projectFilePath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\backend\\Backend.csproj",
+  "projectFilePath": "C:\\Users\\FAMHURP\\Desktop\\PROYECTOS CFQY\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\FAMHURP\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\FAMHURP\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
