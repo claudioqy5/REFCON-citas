@@ -18,3 +18,17 @@ Desktop.ini
 
 # Temporary folders
 scratch/
+
+# .NET Build outputs
+[Bb]in/
+[Oo]bj/
+
+# Node.js dependencies
+node_modules/
+
+# Local database scripts and data dumps (not part of app runtime)
+*.sql
+*.csv
+parse_csv.js
+parse_history.py
+
