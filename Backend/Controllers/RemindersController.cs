@@ -64,11 +64,12 @@ namespace Backend.Controllers
             string? usuarioReferencial = activeUser?.UsuarioReferencial;
             string? claveReferencial = activeUser?.ClaveReferencial;
 
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
             var peticion = new PeticionEnvio
             {
                 EstablecimientoID = establecimientoId,
                 UsuarioID = usuarioId,
-                FechaPeticion = DateTime.UtcNow,
+                FechaPeticion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone),
                 EstadoProceso = "Pendiente"
             };
 
@@ -118,7 +119,9 @@ namespace Backend.Controllers
                                     pet.EstadoProceso     = "Error";
                                     pet.MensajeError      = $"No se pudo conectar con n8n: {ex.Message}";
                                     pet.EtapaError        = "Conexion_N8n";
-                                    pet.FechaFinalizacion = DateTime.UtcNow;
+                                    
+                                    TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+                                    pet.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
                                     await scopedContext.SaveChangesAsync();
                                 }
                             }
@@ -329,8 +332,10 @@ namespace Backend.Controllers
             if (peticion == null) return NotFound("Petición no encontrada");
 
             peticion.EstadoProceso = dto.EstadoProceso;
-            peticion.FechaFinalizacion = DateTime.UtcNow;
-
+            
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+            peticion.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
+ 
             _context.Entry(peticion).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 

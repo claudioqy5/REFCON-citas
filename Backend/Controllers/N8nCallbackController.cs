@@ -71,11 +71,12 @@ namespace Backend.Controllers
                 }
 
                 // Crear petición nueva automática
+                TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
                 peticion = new PeticionEnvio
                 {
                     EstablecimientoID = dto.EstablecimientoId,
                     UsuarioID = null, // ejecución automática
-                    FechaPeticion = DateTime.UtcNow,
+                    FechaPeticion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone),
                 };
                 _context.PeticionesEnvio.Add(peticion);
             }
@@ -240,8 +241,9 @@ namespace Backend.Controllers
 
             if (peticion == null) return NotFound();
 
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
             peticion.EstadoProceso    = "Completado";
-            peticion.FechaFinalizacion = DateTime.UtcNow;
+            peticion.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
 
             await _context.SaveChangesAsync();
 
@@ -265,11 +267,12 @@ namespace Backend.Controllers
 
             if (peticion == null) return NotFound();
 
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
             // "SinPacientes" es informativo, no un error del sistema
             peticion.EstadoProceso    = dto.Etapa == "SinPacientes" ? "SinPacientes" : "Error";
             peticion.MensajeError     = dto.Mensaje;
             peticion.EtapaError       = dto.Etapa;
-            peticion.FechaFinalizacion = DateTime.UtcNow;
+            peticion.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
 
             await _context.SaveChangesAsync();
 

@@ -81,11 +81,12 @@ namespace Backend.Services
                     continue;
                 }
 
+                TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
                 var peticion = new PeticionEnvio
                 {
                     EstablecimientoID = est.EstablecimientoID,
                     UsuarioID = user.UsuarioID,
-                    FechaPeticion = DateTime.UtcNow,
+                    FechaPeticion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone),
                     EstadoProceso = "Pendiente"
                 };
 
@@ -131,7 +132,9 @@ namespace Backend.Services
                                     pet.EstadoProceso = "Error";
                                     pet.MensajeError = $"No se pudo conectar con n8n: {ex.Message}";
                                     pet.EtapaError = "Conexion_N8n";
-                                    pet.FechaFinalizacion = DateTime.UtcNow;
+                                    
+                                    TimeZoneInfo pZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+                                    pet.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pZone);
                                     await errContext.SaveChangesAsync();
                                 }
                             }
