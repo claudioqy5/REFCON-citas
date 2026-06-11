@@ -60,8 +60,9 @@ namespace Backend.Services
             foreach (var est in establecimientos)
             {
                 // Check if already processed today
+                var tomorrow = today.AddDays(1);
                 var existingPeticionToday = await context.PeticionesEnvio
-                    .Where(p => p.EstablecimientoID == est.EstablecimientoID && p.FechaPeticion.Date == today && p.EstadoProceso != "Error")
+                    .Where(p => p.EstablecimientoID == est.EstablecimientoID && p.FechaPeticion >= today && p.FechaPeticion < tomorrow && p.EstadoProceso != "Error")
                     .FirstOrDefaultAsync();
 
                 if (existingPeticionToday != null)
