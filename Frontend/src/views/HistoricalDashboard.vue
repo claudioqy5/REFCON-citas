@@ -94,45 +94,27 @@
           </div>
         </div>
         
-        <div class="donut-chart-container" v-if="topSpecialties.length > 0">
-          <!-- Donut SVG -->
-          <div class="donut-svg-wrapper">
-            <svg class="donut-svg" viewBox="0 0 100 100">
-              <!-- Background Circle track -->
-              <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--border-color)" stroke-width="10" />
-              
-              <!-- Segment Slices -->
-              <circle 
-                v-for="slice in specialtiesChartData" 
-                :key="slice.name"
-                cx="50"
-                cy="50"
-                r="40"
-                fill="transparent"
-                :stroke="slice.color"
-                stroke-width="10"
-                :stroke-dasharray="`${slice.strokeLength} 251.327`"
-                :stroke-dashoffset="slice.strokeOffset"
-                stroke-linecap="round"
-                transform="rotate(-90 50 50)"
-                class="donut-slice"
-              />
-              
-              <!-- Total Sent Count in Center -->
-              <g class="donut-center-text">
-                <text x="50" y="47" text-anchor="middle" class="donut-total-num">{{ totalMessages }}</text>
-                <text x="50" y="64" text-anchor="middle" class="donut-total-label">Envíos</text>
-              </g>
-            </svg>
-          </div>
-          
-          <!-- Interactive Legend -->
-          <div class="donut-legend">
-            <div v-for="slice in specialtiesChartData" :key="slice.name" class="legend-item">
-              <div class="legend-color-indicator" :style="{ backgroundColor: slice.color }"></div>
-              <div class="legend-info">
-                <span class="legend-name">{{ slice.name }}</span>
-                <span class="legend-percentage">{{ slice.count }} envíos ({{ slice.percentage }}%)</span>
+        <div class="specialty-horizontal-chart-container" v-if="allSpecialties.length > 0">
+          <div class="specialty-list-scrollable">
+            <div 
+              v-for="(spec, index) in allSpecialties" 
+              :key="spec.name" 
+              class="horizontal-bar-row"
+            >
+              <div class="bar-info">
+                <span class="bar-spec-name">{{ spec.name }}</span>
+                <span class="bar-spec-count">
+                  <strong>{{ spec.count }}</strong> {{ spec.count === 1 ? 'envío' : 'envíos' }}
+                </span>
+              </div>
+              <div class="bar-track">
+                <div 
+                  class="bar-fill" 
+                  :style="{ 
+                    width: (spec.count / maxSpecialtyCount * 100) + '%',
+                    background: getSpecialtyBarColor(index)
+                  }"
+                ></div>
               </div>
             </div>
           </div>
@@ -201,49 +183,38 @@ const getBarHeight = (count) => {
   return `${Math.max(percentage, 5)}%`
 }
 
-// Specialty Chart computations (All-Time Donut)
-const topSpecialties = computed(() => {
+// Specialty Chart computations (All Specialties Horizontal Bars)
+const allSpecialties = computed(() => {
   const specMap = {}
   history.value.forEach(item => {
     if (item.especialidad) {
-      specMap[item.especialidad] = (specMap[item.especialidad] || 0) + 1
+      const spec = item.especialidad.trim() || 'General'
+      specMap[spec] = (specMap[spec] || 0) + 1
     }
   })
   return Object.keys(specMap).map(name => ({
     name,
     count: specMap[name]
-  })).sort((a, b) => b.count - a.count).slice(0, 5)
+  })).sort((a, b) => b.count - a.count)
 })
 
-const specialtiesChartData = computed(() => {
-  const total = topSpecialties.value.reduce((acc, curr) => acc + curr.count, 0)
-  if (total === 0) return []
-  
-  let currentOffset = 0
-  const colors = [
-    '#6366f1', // Indigo
-    '#10b981', // Emerald
-    '#3b82f6', // Blue
-    '#f59e0b', // Amber
-    '#8b5cf6', // Purple
-  ]
-  
-  return topSpecialties.value.map((spec, index) => {
-    const percentage = spec.count / total
-    const strokeLength = percentage * 251.327 // 2 * pi * r (r=40)
-    const strokeOffset = 251.327 - currentOffset
-    currentOffset += strokeLength
-    
-    return {
-      name: spec.name,
-      count: spec.count,
-      percentage: Math.round(percentage * 100),
-      strokeLength,
-      strokeOffset,
-      color: colors[index % colors.length]
-    }
-  })
+const maxSpecialtyCount = computed(() => {
+  const max = Math.max(...allSpecialties.value.map(s => s.count), 0)
+  return max === 0 ? 1 : max
 })
+
+const getSpecialtyBarColor = (index) => {
+  const colors = [
+    'linear-gradient(90deg, #6366f1 0%, #a5b4fc 100%)', // Indigo
+    'linear-gradient(90deg, #10b981 0%, #6ee7b7 100%)', // Emerald
+    'linear-gradient(90deg, #3b82f6 0%, #93c5fd 100%)', // Blue
+    'linear-gradient(90deg, #f59e0b 0%, #fde68a 100%)', // Amber
+    'linear-gradient(90deg, #ec4899 0%, #fbcfe8 100%)', // Pink
+    'linear-gradient(90deg, #8b5cf6 0%, #c7d2fe 100%)', // Purple
+    'linear-gradient(90deg, #14b8a6 0%, #99f6e4 100%)'  // Teal
+  ]
+  return colors[index % colors.length]
+}
 
 const fetchData = async () => {
   try {
@@ -590,43 +561,62 @@ onUnmounted(() => {
   letter-spacing: 1px;
 }
 
-.donut-legend {
+/* Horizontal Bar Chart Styles */
+.specialty-horizontal-chart-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   flex-grow: 1;
-  max-width: 220px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.legend-color-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.legend-info {
+.specialty-list-scrollable {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-top: 0.5rem;
 }
 
-.legend-name {
-  font-size: 0.8rem;
-  font-weight: 600;
+.horizontal-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.bar-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.bar-spec-name {
+  font-weight: 700;
   color: var(--text-h);
-  line-height: 1.2;
 }
 
-.legend-percentage {
-  font-size: 0.7rem;
+.bar-spec-count {
   color: var(--text-muted);
-  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.bar-track {
+  height: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .empty-chart {
@@ -636,13 +626,6 @@ onUnmounted(() => {
   height: 150px;
   color: var(--text-muted);
   font-size: 0.9rem;
-}
-
-@media (max-width: 480px) {
-  .donut-chart-container {
-    flex-direction: column;
-    align-items: center;
-  }
 }
 
 @media (max-width: 768px) {

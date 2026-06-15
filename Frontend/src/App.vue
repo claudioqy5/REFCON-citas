@@ -19,6 +19,10 @@
           <span class="link-icon">👥</span>
           <span class="link-text">Pacientes</span>
         </router-link>
+        <router-link to="/calendar">
+          <span class="link-icon">📅</span>
+          <span class="link-text">Agenda</span>
+        </router-link>
         <router-link to="/history">
           <span class="link-icon">📜</span>
           <span class="link-text">Historial</span>
