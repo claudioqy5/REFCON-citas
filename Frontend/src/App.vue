@@ -111,7 +111,10 @@ const logout = () => {
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
-  box-sizing: border-box;
+  box-sizing: border-box;  
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(30, 41, 59, 0.85) 100%), url('./assets/sidebarfondo.jpg') no-repeat center center / cover;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Beautiful hover expanding effect */
@@ -287,5 +290,41 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+
+/* Sidebar dark overrides for readability */
+.sidebar .nav-brand {
+  color: #FFFFFF !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.sidebar .brand-text {
+  color: #FFFFFF !important;
+}
+
+.sidebar .nav-links a {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.sidebar .nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+}
+
+.sidebar .nav-links a.router-link-active {
+  background: rgba(99, 102, 241, 0.35) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+}
+
+.sidebar .btn-logout {
+  color: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.sidebar .btn-logout:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+  color: #FFA3A3 !important;
 }
 </style>
