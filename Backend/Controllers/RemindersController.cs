@@ -212,7 +212,8 @@ namespace Backend.Controllers
                     p.PacienteID,
                     p.Dni,
                     p.NombreCompleto,
-                    p.Celular
+                    p.Celular,
+                    TotalMensajesEnviados = _context.HistorialMensajes.Count(hm => hm.PacienteID == p.PacienteID)
                 })
                 .ToListAsync();
 

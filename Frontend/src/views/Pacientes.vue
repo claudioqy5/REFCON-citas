@@ -17,6 +17,7 @@
               <th>DNI</th>
               <th>Nombre Completo</th>
               <th>Celular</th>
+              <th>Mensajes Enviados</th>
             </tr>
           </thead>
           <tbody>
@@ -25,6 +26,9 @@
               <td>{{ item.dni }}</td>
               <td>{{ item.nombreCompleto }}</td>
               <td>{{ item.celular }}</td>
+              <td>
+                <span class="badge-count">{{ item.totalMensajesEnviados }}</span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -143,5 +147,16 @@ tr:hover td {
   width: 40px;
   text-align: center;
   color: var(--text-muted);
+}
+.badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #E0F2FE;
+  color: #0369A1;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
 }
 </style>
