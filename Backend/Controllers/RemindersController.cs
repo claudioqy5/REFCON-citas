@@ -342,6 +342,37 @@ namespace Backend.Controllers
             return Ok(new { success = true, peticionID = id, estado = peticion.EstadoProceso });
         }
 
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelProcess()
+        {
+            int establecimientoId = GetEstablecimientoID();
+            if (establecimientoId == 0)
+                return Unauthorized();
+
+            var pendingProcesses = await _context.PeticionesEnvio
+                .Where(p => p.EstablecimientoID == establecimientoId && (p.EstadoProceso == "Pendiente" || p.EstadoProceso == "Procesando"))
+                .ToListAsync();
+
+            if (!pendingProcesses.Any())
+            {
+                return BadRequest(new { message = "No hay procesos activos para cancelar." });
+            }
+
+            TimeZoneInfo peruZone = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+            foreach (var peticion in pendingProcesses)
+            {
+                peticion.EstadoProceso = "Error";
+                peticion.MensajeError = "Cancelado por el usuario";
+                peticion.EtapaError = "CancelacionManual";
+                peticion.FechaFinalizacion = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, peruZone);
+                _context.Entry(peticion).State = EntityState.Modified;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Proceso cancelado y desbloqueado exitosamente." });
+        }
+
         [HttpGet("credentials")]
         public async Task<IActionResult> GetCredentials()
         {

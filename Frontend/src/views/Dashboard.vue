@@ -30,7 +30,16 @@
             <span class="btn-icon pulse-spinner" v-else>⚙️</span>
             {{ isProcessing ? 'Procesando...' : 'Iniciar Envío WhatsApp' }}
           </button>
-          
+
+          <button 
+            v-if="isProcessing" 
+            @click="cancelReminders" 
+            class="btn btn-cancel-action"
+            title="Cancelar envíos activos o desbloquear el botón"
+          >
+            ❌ Cancelar Envío
+          </button>
+
           <button @click="openCredentialsModal" class="btn-settings-credentials" title="Configurar Credenciales de Scraping">
             ⚙️
           </button>
@@ -763,6 +772,24 @@ const triggerReminders = async () => {
   }
 }
 
+const cancelReminders = async () => {
+  if (!confirm('¿Estás seguro de que deseas cancelar los envíos activos y desbloquear el botón?')) {
+    return
+  }
+  errorMsg.value = ''
+  try {
+    const res = await api.post('/reminders/cancel')
+    await fetchData()
+    if (pollInterval) {
+      clearInterval(pollInterval)
+      pollInterval = null
+    }
+    alert(res.data?.message || 'Proceso cancelado correctamente.')
+  } catch (err) {
+    errorMsg.value = err.response?.data?.message || 'Error al cancelar los envíos.'
+  }
+}
+
 onMounted(smartPoll)
 onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 </script>
@@ -901,6 +928,38 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   border-color: #cbd5e1;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.btn-cancel-action {
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  padding: 0.8rem 1.4rem;
+  border-radius: 9999px;
+  border: 1.5px solid #fca5a5;
+  background: rgba(254, 226, 226, 0.4);
+  color: #dc2626;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.btn-cancel-action:hover:not(:disabled) {
+  color: white;
+  background: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.2);
+}
+
+.btn-cancel-action:active:not(:disabled) {
+  transform: scale(0.96) translateY(0);
 }
 
 .btn-icon {
