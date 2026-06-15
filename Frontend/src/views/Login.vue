@@ -231,7 +231,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffffff00 0%, #00000085 100%), url(/assets/fondologinmedicina-2qU76OgT.jpg) 50% / cover no-repeat;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.75) 100%), url('../assets/fondologinmedicina.jpg') no-repeat center center / cover;
   padding: 1.5rem;
   box-sizing: border-box;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
