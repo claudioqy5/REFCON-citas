@@ -64,8 +64,18 @@
       <div class="glass-panel chart-card">
         <div class="chart-header-row">
           <div class="chart-title-col">
-            <h3>Envíos por Día (Acumulado)</h3>
-            <p class="chart-subtitle">Resumen histórico de envíos de Lunes a Domingo</p>
+            <h3>Envíos por Semana</h3>
+            <p class="chart-subtitle">Mensajes enviados de Lunes a Domingo</p>
+          </div>
+          <!-- Week filter selector -->
+          <div class="week-filter-container">
+            <div class="week-select-wrapper">
+              <select v-model="selectedWeekKey" class="week-select">
+                <option v-for="week in availableWeeks" :key="week.monday.getTime()" :value="week.monday.getTime()">
+                  {{ week.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="bar-chart">
@@ -137,6 +147,7 @@ const authStore = useAuthStore()
 const history = ref([])
 const patients = ref([])
 const establishmentNombre = ref('')
+const selectedWeekKey = ref(null)
 let pollInterval = null
 
 const api = axios.create({
@@ -163,15 +174,84 @@ const barColors = [
   '#14b8a6'  // Domingo (Teal)
 ]
 
-// Weekly Chart computations (All-Time)
+// Weekly Chart computations (Filtered by Selected Week)
 const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const weeklyCounts = computed(() => {
-  const counts = [0, 0, 0, 0, 0, 0, 0]
+
+const formatWeekLabel = (monday, sunday, isCurrent = false) => {
+  const options = { day: '2-digit', month: '2-digit', year: 'numeric' }
+  const monStr = monday.toLocaleDateString('es-ES', options)
+  const sunStr = sunday.toLocaleDateString('es-ES', options)
+  const prefix = isCurrent ? 'Semana Actual: ' : 'Semana: '
+  return `${prefix}${monStr} al ${sunStr}`
+}
+
+const availableWeeks = computed(() => {
+  const weeksMap = {}
+  
+  // Always ensure current week is an option first
+  const now = new Date()
+  const dayNow = now.getDay()
+  const diffNow = now.getDate() - dayNow + (dayNow === 0 ? -6 : 1)
+  const currMon = new Date(now.getFullYear(), now.getMonth(), diffNow)
+  currMon.setHours(0, 0, 0, 0)
+  const currSun = new Date(currMon.getTime() + 6 * 24 * 60 * 60 * 1000)
+  currSun.setHours(23, 59, 59, 999)
+  
+  const currKey = currMon.getTime()
+  weeksMap[currKey] = {
+    monday: currMon,
+    sunday: currSun,
+    label: formatWeekLabel(currMon, currSun, true)
+  }
+  
   history.value.forEach(item => {
     if (item.fechaHoraEnvio) {
-      const day = new Date(item.fechaHoraEnvio).getDay() // 0 = Sun, 1 = Mon...
-      const index = day === 0 ? 6 : day - 1
-      counts[index]++
+      const date = new Date(item.fechaHoraEnvio)
+      const day = date.getDay()
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+      const monday = new Date(date.getFullYear(), date.getMonth(), diff)
+      monday.setHours(0, 0, 0, 0)
+      
+      const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000)
+      sunday.setHours(23, 59, 59, 999)
+      
+      const key = monday.getTime()
+      if (!weeksMap[key]) {
+        weeksMap[key] = {
+          monday,
+          sunday,
+          label: formatWeekLabel(monday, sunday, false)
+        }
+      }
+    }
+  })
+  
+  // Return sorted descending (newest weeks first)
+  return Object.values(weeksMap).sort((a, b) => b.monday - a.monday)
+})
+
+const selectedWeekData = computed(() => {
+  if (!selectedWeekKey.value) return { monday: null, sunday: null }
+  return availableWeeks.value.find(w => w.monday.getTime() === selectedWeekKey.value) || { monday: null, sunday: null }
+})
+
+const weeklyCounts = computed(() => {
+  const counts = [0, 0, 0, 0, 0, 0, 0]
+  const week = selectedWeekData.value
+  if (!week.monday) return counts
+  
+  const start = week.monday.getTime()
+  const end = week.sunday.getTime()
+  
+  history.value.forEach(item => {
+    if (item.fechaHoraEnvio) {
+      const date = new Date(item.fechaHoraEnvio)
+      const time = date.getTime()
+      if (time >= start && time <= end) {
+        const day = date.getDay() // 0 = Sun, 1 = Mon...
+        const index = day === 0 ? 6 : day - 1
+        counts[index]++
+      }
     }
   })
   return counts
@@ -228,6 +308,10 @@ const fetchData = async () => {
     if (resEst.data && resEst.data.name) {
       establishmentNombre.value = resEst.data.name
     }
+    // Set default selected week if not set yet
+    if (availableWeeks.value.length > 0 && !selectedWeekKey.value) {
+      selectedWeekKey.value = availableWeeks.value[0].monday.getTime()
+    }
   } catch (err) {
     console.error('Error fetching historical dashboard data', err)
   }
@@ -250,7 +334,7 @@ onUnmounted(() => {
   gap: 2vh;  
   margin: 0 auto;
   width: 100%;
-  height: calc(100vh - 2.5rem);
+  min-height: 100%;
   box-sizing: border-box;
 }
 
@@ -397,16 +481,12 @@ onUnmounted(() => {
   grid-template-columns: 1.2fr 1fr;
   gap: 1.5rem;
   width: 100%;
-  flex-grow: 1; /* Stretch to fill remaining viewport height */
-  min-height: 0; /* Prevents layout overflow */
   box-sizing: border-box;
 }
 .chart-card {
   padding: 2vh 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
   box-sizing: border-box;
 }
 .chart-card h3 {
@@ -487,9 +567,51 @@ onUnmounted(() => {
 .chart-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 1.5vh;
+}
+
+/* Week Selector Styles */
+.week-filter-container {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.week-select-wrapper {
+  position: relative;
+}
+
+.week-select {
+  padding: 0.45rem 1.75rem 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-main);
+  border-radius: 8px;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.week-select:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.week-select-wrapper::after {
+  content: '▼';
+  font-size: 0.55rem;
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
 .chart-title-col {
@@ -574,9 +696,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 250px;
-  overflow-y: auto;
-  padding-right: 0.5rem;
   margin-top: 0.5rem;
 }
 
