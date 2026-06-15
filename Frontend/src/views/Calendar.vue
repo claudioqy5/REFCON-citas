@@ -380,10 +380,16 @@ onUnmounted(() => {
 .calendar-page-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   width: 100%;
-  height: calc(100vh - 2.5rem);
+  height: calc(100vh - 8rem);
   box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .calendar-page-container {
+    height: auto;
+  }
 }
 
 /* Welcome Header Custom Styles */
@@ -550,7 +556,7 @@ onUnmounted(() => {
 
 .calendar-cells-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-template-rows: repeat(6, 1fr);
   gap: 4px;
   flex-grow: 1;
@@ -568,7 +574,9 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  min-height: 50px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar-cell:hover {
@@ -627,12 +635,10 @@ onUnmounted(() => {
   font-size: 0.65rem;
   padding: 2px 4px;
   border-radius: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: flex;
   gap: 3px;
   font-weight: 600;
+  min-width: 0;
 }
 
 .appt-mini-pill.status-sent {
@@ -653,8 +659,11 @@ onUnmounted(() => {
 }
 
 .appt-name {
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
 }
 
 .appt-more-badge {
