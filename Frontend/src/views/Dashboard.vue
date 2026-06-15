@@ -88,8 +88,9 @@
       </div>
     </div>
 
-    <!-- 2. QUICK ACTIONS & STATUS -->
-    <div class="action-grid">
+    <!-- 2. MAIN CONTENT GRID (Actions & Charts) -->
+    <div class="dashboard-main-grid">
+      <!-- Left Column: Operations -->
       <div class="glass-panel main-panel">
         <div class="panel-header-row">
           <div>
@@ -165,6 +166,118 @@
         </div>
 
         <p v-if="errorMsg" class="error-msg">⚠️ {{ errorMsg }}</p>
+      </div>
+
+      <!-- Right Column: Premium Charts -->
+      <div class="glass-panel main-panel charts-panel">
+        <div class="panel-header-row">
+          <div>
+            <h2>Monitoreo de Hoy</h2>
+            <p class="subtitle">Análisis visual de los envíos realizados durante el día</p>
+          </div>
+        </div>
+
+        <div v-if="totalMessages === 0" class="empty-charts-container">
+          <div class="empty-chart-illustration">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3>Sin actividad registrada hoy</h3>
+          <p>Los gráficos se activarán tan pronto como se inicien los envíos de recordatorios del día.</p>
+        </div>
+
+        <div v-else class="dashboard-charts-content">
+          <!-- Specialty Chart (Donut) -->
+          <div class="chart-container-box">
+            <h4 class="chart-box-title">Por Especialidad</h4>
+            <div class="donut-chart-wrapper">
+              <div class="donut-svg-container">
+                <svg viewBox="0 0 100 100" class="donut-svg">
+                  <!-- Background Track circle -->
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    stroke="#f1f5f9"
+                    stroke-width="8"
+                  />
+                  <!-- Slices -->
+                  <circle
+                    v-for="(item, idx) in donutChartData"
+                    :key="idx"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    :stroke="item.color"
+                    stroke-width="8"
+                    :stroke-dasharray="item.strokeLength + ' ' + (251.327 - item.strokeLength)"
+                    :stroke-dashoffset="item.strokeOffset"
+                    stroke-linecap="round"
+                    class="donut-slice"
+                    transform="rotate(-90 50 50)"
+                  />
+                  <!-- Inner Text -->
+                  <g class="donut-center-text">
+                    <text x="50" y="47" text-anchor="middle" class="donut-total-num">
+                      {{ totalMessages }}
+                    </text>
+                    <text x="50" y="62" text-anchor="middle" class="donut-total-label">
+                      Enviados
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Legend -->
+              <div class="donut-legend-container">
+                <div 
+                  v-for="(item, idx) in donutChartData" 
+                  :key="idx" 
+                  class="legend-item-row"
+                >
+                  <span class="legend-color-dot" :style="{ backgroundColor: item.color }"></span>
+                  <div class="legend-item-details">
+                    <span class="legend-item-name">{{ item.name }}</span>
+                    <span class="legend-item-meta">{{ item.count }} msg ({{ item.percentage }}%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hourly Chart (Bars) -->
+          <div class="chart-container-box">
+            <h4 class="chart-box-title">Distribución por Hora</h4>
+            <div class="hourly-bars-container">
+              <div 
+                v-for="(item, idx) in hourlyIntervals" 
+                :key="idx" 
+                class="hourly-bar-column"
+              >
+                <!-- Custom Tooltip -->
+                <div class="bar-value-bubble">{{ item.count }}</div>
+                
+                <!-- Bar Track -->
+                <div class="bar-track-vertical">
+                  <div 
+                    class="bar-fill-vertical animate-grow"
+                    :style="{ 
+                      height: getHourlyBarHeight(item.count) + '%', 
+                      background: getHourlyBarColor(idx) 
+                    }"
+                  ></div>
+                </div>
+
+                <!-- Label -->
+                <span class="hourly-label-primary">{{ item.label.split(' ')[0] }}</span>
+                <span class="hourly-label-secondary">{{ item.label.split(' ')[1] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -325,6 +438,109 @@ const currentDateText = computed(() => {
   const dateStr = new Date().toLocaleDateString('es-ES', options)
   return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 })
+
+// Specialty distribution for today
+const todaySpecialties = computed(() => {
+  const specMap = {}
+  todayHistory.value.forEach(item => {
+    if (item.especialidad) {
+      const spec = item.especialidad.trim() || 'General'
+      specMap[spec] = (specMap[spec] || 0) + 1
+    }
+  })
+  
+  return Object.keys(specMap).map(name => ({
+    name,
+    count: specMap[name]
+  })).sort((a, b) => b.count - a.count)
+})
+
+const todaySpecialtiesTotal = computed(() => {
+  return todaySpecialties.value.reduce((acc, curr) => acc + curr.count, 0)
+})
+
+const donutChartData = computed(() => {
+  const total = todaySpecialtiesTotal.value
+  if (total === 0) return []
+  
+  let currentOffset = 0
+  const colors = [
+    '#6366f1', // Indigo
+    '#10b981', // Emerald
+    '#3b82f6', // Blue
+    '#f59e0b', // Amber
+    '#ec4899', // Pink
+    '#8b5cf6', // Purple
+  ]
+  
+  return todaySpecialties.value.map((spec, index) => {
+    const percentage = spec.count / total
+    const strokeLength = percentage * 251.327 // 2 * pi * r (r=40)
+    const strokeOffset = 251.327 - currentOffset
+    currentOffset += strokeLength
+    
+    return {
+      name: spec.name,
+      count: spec.count,
+      percentage: Math.round(percentage * 100),
+      strokeLength,
+      strokeOffset,
+      color: colors[index % colors.length]
+    }
+  })
+})
+
+const hourlyIntervals = computed(() => {
+  const counts = {
+    'Mañana (08-11h)': 0,
+    'Mediodía (11-14h)': 0,
+    'Tarde (14-17h)': 0,
+    'Noche (17h+)': 0
+  }
+  
+  todayHistory.value.forEach(item => {
+    if (item.fechaHoraEnvio) {
+      const date = new Date(item.fechaHoraEnvio)
+      const hours = date.getHours()
+      
+      if (hours >= 8 && hours < 11) {
+        counts['Mañana (08-11h)']++
+      } else if (hours >= 11 && hours < 14) {
+        counts['Mediodía (11-14h)']++
+      } else if (hours >= 14 && hours < 17) {
+        counts['Tarde (14-17h)']++
+      } else {
+        counts['Noche (17h+)']++
+      }
+    }
+  })
+  
+  return Object.keys(counts).map(label => ({
+    label,
+    count: counts[label]
+  }))
+})
+
+const maxHourlyCount = computed(() => {
+  const max = Math.max(...hourlyIntervals.value.map(i => i.count), 0)
+  return max === 0 ? 1 : max
+})
+
+const getHourlyBarHeight = (count) => {
+  if (totalMessages.value === 0) return 0
+  const max = maxHourlyCount.value
+  return (count / max) * 100
+}
+
+const getHourlyBarColor = (idx) => {
+  const gradients = [
+    'linear-gradient(180deg, #6366f1 0%, #a5b4fc 100%)',
+    'linear-gradient(180deg, #3b82f6 0%, #93c5fd 100%)',
+    'linear-gradient(180deg, #10b981 0%, #6ee7b7 100%)',
+    'linear-gradient(180deg, #f59e0b 0%, #fde68a 100%)'
+  ]
+  return gradients[idx % gradients.length]
+}
 
 // ── Estado de ejecución ───────────────────────────────────────────────────────
 const isProcessing = computed(() =>
@@ -509,6 +725,8 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   width: 100%;
   height: calc(100vh - 2.5rem);
   box-sizing: border-box;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 /* Welcome Header Style */
@@ -826,6 +1044,263 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 /* 2. ACTION & STATUS PANELS */
 .action-grid { width: 100%; }
 .main-panel { padding: 2rem 2.5rem; }
+
+/* 2. MAIN CONTENT GRID (Actions & Charts) */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Charts Panel Specific Styles */
+.charts-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard-charts-content {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 1.5rem;
+  flex-grow: 1;
+}
+
+.chart-container-box {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chart-box-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Donut Chart styling */
+.donut-chart-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.donut-svg-container {
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.donut-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.donut-slice {
+  transition: stroke-width 0.3s ease, filter 0.3s ease;
+}
+
+.donut-slice:hover {
+  stroke-width: 10;
+  filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15));
+  cursor: pointer;
+}
+
+.donut-center-text {
+  user-select: none;
+  pointer-events: none;
+}
+
+.donut-total-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  fill: var(--text-h);
+}
+
+.donut-total-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  fill: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.donut-legend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 180px;
+  flex-grow: 1;
+}
+
+.legend-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.legend-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-item-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.legend-item-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.legend-item-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Hourly Bar Chart styling */
+.hourly-bars-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 140px;
+  padding-top: 1.5rem;
+  box-sizing: border-box;
+}
+
+.hourly-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar-track-vertical {
+  width: 16px;
+  height: 80%;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill-vertical {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-radius: 999px;
+  transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bar-value-bubble {
+  position: absolute;
+  bottom: 82%;
+  background: #1e293b;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.hourly-bar-column:hover .bar-value-bubble {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hourly-label-primary {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-top: 0.4rem;
+}
+
+.hourly-label-secondary {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* Empty charts state styling */
+.empty-charts-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px dashed var(--border-color);
+  border-radius: 16px;
+  color: var(--text-muted);
+  box-sizing: border-box;
+}
+
+.empty-chart-illustration {
+  color: var(--primary-color);
+  opacity: 0.6;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-charts-container h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-charts-container p {
+  font-size: 0.82rem;
+  margin: 0;
+  max-width: 280px;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes grow {
+  from { height: 0; }
+}
+.animate-grow {
+  animation: grow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 .panel-header-row {
   display: flex;
