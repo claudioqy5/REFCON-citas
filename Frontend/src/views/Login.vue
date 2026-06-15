@@ -134,7 +134,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0076FF 0%, #0045B5 100%);
+  background: linear-gradient(135deg, rgba(0, 118, 255, 0.75) 0%, rgba(0, 69, 181, 0.85) 100%), url('../assets/fondologinmedicina.jpg') no-repeat center center / cover;
   padding: 1.5rem;
   box-sizing: border-box;
 }

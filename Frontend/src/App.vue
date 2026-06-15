@@ -112,9 +112,9 @@ const logout = () => {
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;  
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(30, 41, 59, 0.85) 100%), url('./assets/sidebarfondo.jpg') no-repeat center center / cover;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.88) 100%), url('./assets/sidebarfondo.jpg') no-repeat center center / cover;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Beautiful hover expanding effect */
@@ -292,39 +292,39 @@ const logout = () => {
   overflow-y: auto;
 }
 
-/* Sidebar dark overrides for readability */
+/* Sidebar light overrides for black text readability */
 .sidebar .nav-brand {
-  color: #FFFFFF !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #000000 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 .sidebar .brand-text {
-  color: #FFFFFF !important;
+  color: #000000 !important;
 }
 
 .sidebar .nav-links a {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: #1E293B !important;
 }
 
 .sidebar .nav-links a:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #FFFFFF !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #000000 !important;
 }
 
 .sidebar .nav-links a.router-link-active {
-  background: rgba(99, 102, 241, 0.35) !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: var(--primary-color) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
 .sidebar .btn-logout {
-  color: rgba(255, 255, 255, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #1E293B !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 .sidebar .btn-logout:hover {
-  background: rgba(239, 68, 68, 0.25) !important;
-  border-color: rgba(239, 68, 68, 0.45) !important;
-  color: #FFA3A3 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #EF4444 !important;
 }
 </style>
