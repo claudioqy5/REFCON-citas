@@ -66,7 +66,7 @@
               <input type="checkbox" v-model="rememberMe" />
               <span>Recordarme</span>
             </label>
-            <a href="#" class="forgot-password-link">¿Olvidaste tu contraseña?</a>
+            <a href="#" class="forgot-password-link" @click.prevent="showForgotModal = true">¿Olvidaste tu contraseña?</a>
           </div>
           
           <div v-if="errorMsg" class="error-msg-banner">
@@ -90,6 +90,67 @@
         </div>
       </div>
     </div>
+ 
+    <!-- Modal de Restablecer Contraseña -->
+    <Transition name="fade">
+      <div v-if="showForgotModal" class="modal-overlay" @click.self="closeForgotModal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3>Restablecer Contraseña</h3>
+            <button type="button" class="btn-close-modal" @click="closeForgotModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-notice">
+              Por favor, ingresa tu correo registrado y describe tu solicitud para que el administrador la procese.
+            </p>
+            
+            <form @submit.prevent="handleForgotSubmit" class="modal-form">
+              <div class="modal-input-wrapper">
+                <span class="modal-input-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
+                </span>
+                <input 
+                  type="email" 
+                  v-model="forgotEmail" 
+                  required 
+                  placeholder="Tu correo electrónico registrado" 
+                  class="modal-input"
+                />
+              </div>
+ 
+              <div class="modal-input-wrapper textarea-wrapper">
+                <textarea 
+                  v-model="forgotMessage" 
+                  required 
+                  placeholder="Describe brevemente tu solicitud (Ej: Solicito restablecer la contraseña de mi cuenta de enfermería)..." 
+                  class="modal-textarea"
+                  rows="3"
+                ></textarea>
+              </div>
+ 
+              <div v-if="forgotError" class="modal-error">
+                ⚠️ {{ forgotError }}
+              </div>
+              <div v-if="forgotSuccess" class="modal-success">
+                ✅ {{ forgotSuccess }}
+              </div>
+ 
+              <div class="modal-actions">
+                <button type="button" class="btn-modal-cancel" @click="closeForgotModal" :disabled="forgotLoading">
+                  Cancelar
+                </button>
+                <button type="submit" class="btn-modal-submit" :disabled="forgotLoading">
+                  <span v-if="forgotLoading" class="spinner-small"></span>
+                  <span>{{ forgotLoading ? 'Enviando...' : 'Enviar Solicitud' }}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -107,7 +168,43 @@ const showPassword = ref(false)
 const rememberMe = ref(false)
 const router = useRouter()
 const authStore = useAuthStore()
-
+ 
+const showForgotModal = ref(false)
+const forgotEmail = ref('')
+const forgotMessage = ref('')
+const forgotError = ref('')
+const forgotSuccess = ref('')
+const forgotLoading = ref(false)
+ 
+const closeForgotModal = () => {
+  showForgotModal.value = false
+  forgotEmail.value = ''
+  forgotMessage.value = ''
+  forgotError.value = ''
+  forgotSuccess.value = ''
+}
+ 
+const handleForgotSubmit = async () => {
+  forgotLoading.value = true
+  forgotError.value = ''
+  forgotSuccess.value = ''
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5146/api'}/auth/forgot-password`, {
+      email: forgotEmail.value,
+      message: forgotMessage.value
+    })
+    forgotSuccess.value = response.data.message || 'Solicitud enviada al administrador con éxito.'
+    forgotMessage.value = ''
+    setTimeout(() => {
+      closeForgotModal()
+    }, 3000)
+  } catch (err) {
+    forgotError.value = err.response?.data?.message || 'Error al enviar la solicitud.'
+  } finally {
+    forgotLoading.value = false
+  }
+}
+ 
 const handleLogin = async () => {
   loading.value = true
   errorMsg.value = ''
@@ -134,7 +231,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(0, 118, 255, 0.75) 0%, rgba(0, 69, 181, 0.85) 100%), url('../assets/fondologinmedicina.jpg') no-repeat center center / cover;
+  background: linear-gradient(135deg, #ffffff00 0%, #00000085 100%), url(/assets/fondologinmedicina-2qU76OgT.jpg) 50% / cover no-repeat;
   padding: 1.5rem;
   box-sizing: border-box;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -145,8 +242,7 @@ const handleLogin = async () => {
   width: 100%;
   max-width: 900px;
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);  
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
@@ -209,16 +305,14 @@ const handleLogin = async () => {
   backdrop-filter: blur(5px);
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.75rem;  
   letter-spacing: 0.5px;
   display: inline-block;
   margin-bottom: 1.5rem;
 }
 
 .brand-headline {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2rem;  
   line-height: 1.25;
   margin: 0 0 1rem 0;
   letter-spacing: -0.5px;
@@ -229,6 +323,7 @@ const handleLogin = async () => {
   line-height: 1.5;
   opacity: 0.9;
   margin: 0;
+  font-weight: 300;
 }
 
 /* Right Pane Style (White Form) */
@@ -247,8 +342,7 @@ const handleLogin = async () => {
 }
 
 .login-header h2 {
-  font-size: 1.85rem;
-  font-weight: 800;
+  font-size: 1.85rem;  
   color: #0F172A;
   margin: 0 0 0.4rem 0;
 }
@@ -294,8 +388,7 @@ const handleLogin = async () => {
   background: transparent;
   padding: 0.9rem 1rem 0.9rem 2.75rem;
   font-size: 0.9rem;
-  color: #0F172A;
-  font-weight: 600;
+  color: #0F172A;  
   outline: none;
   box-sizing: border-box;
 }
@@ -449,5 +542,198 @@ const handleLogin = async () => {
   .brand-headline {
     font-size: 1.5rem;
   }
+}
+ 
+/* Modal Glassmorphism Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+ 
+.modal-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  width: 100%;
+  max-width: 460px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: modalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+ 
+@keyframes modalEnter {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+ 
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+ 
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+ 
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748B;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+ 
+.btn-close-modal:hover {
+  color: #0F172A;
+}
+ 
+.modal-body {
+  padding: 1.5rem;
+}
+ 
+.modal-notice {
+  font-size: 0.85rem;
+  color: #64748B;
+  line-height: 1.4;
+  margin-bottom: 1.25rem;
+}
+ 
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+ 
+.modal-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  border-radius: 10px;
+}
+ 
+.modal-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+}
+ 
+.modal-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.75rem 1rem 0.75rem 2.25rem;
+  font-size: 0.85rem;
+  color: #0F172A;
+  outline: none;
+}
+ 
+.modal-textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: #0F172A;
+  outline: none;
+  resize: none;
+}
+ 
+.textarea-wrapper {
+  background: #F1F5F9;
+  border-radius: 10px;
+}
+ 
+.modal-error {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+ 
+.modal-success {
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #166534;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+ 
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+ 
+.btn-modal-cancel {
+  background: transparent;
+  border: 1px solid #CBD5E1;
+  color: #64748B;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+ 
+.btn-modal-cancel:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+ 
+.btn-modal-submit {
+  background: #0045B5;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+ 
+.btn-modal-submit:hover:not(:disabled) {
+  background: #003691;
+}
+ 
+/* Transition styles */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>
