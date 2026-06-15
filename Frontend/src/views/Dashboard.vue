@@ -248,32 +248,34 @@
             </div>
           </div>
 
-          <!-- Hourly Chart (Bars) -->
+          <!-- References by Specialty Chart -->
           <div class="chart-container-box">
-            <h4 class="chart-box-title">Distribución por Hora</h4>
-            <div class="hourly-bars-container">
+            <h4 class="chart-box-title">Referencias por Especialidad</h4>
+            <div class="specialty-bars-container">
               <div 
-                v-for="(item, idx) in hourlyIntervals" 
+                v-for="(item, idx) in specialtyReferences" 
                 :key="idx" 
-                class="hourly-bar-column"
+                class="specialty-bar-row"
               >
-                <!-- Custom Tooltip -->
-                <div class="bar-value-bubble">{{ item.count }}</div>
-                
-                <!-- Bar Track -->
-                <div class="bar-track-vertical">
+                <div class="specialty-info-row">
+                  <span class="specialty-name-lbl">{{ item.name }}</span>
+                  <span class="specialty-count-lbl">
+                    <strong>{{ item.total }}</strong> citas ({{ item.sent }} ✅ / {{ item.failed }} ❌)
+                  </span>
+                </div>
+                <div class="specialty-bar-track">
+                  <!-- Staged bars showing status proportions -->
                   <div 
-                    class="bar-fill-vertical animate-grow"
-                    :style="{ 
-                      height: getHourlyBarHeight(item.count) + '%', 
-                      background: getHourlyBarColor(idx) 
-                    }"
+                    class="specialty-bar-fill fill-sent" 
+                    :style="{ width: (item.sent / item.total * 100) + '%' }"
+                    title="Exitosos"
+                  ></div>
+                  <div 
+                    class="specialty-bar-fill fill-failed" 
+                    :style="{ width: (item.failed / item.total * 100) + '%' }"
+                    title="Fallidos"
                   ></div>
                 </div>
-
-                <!-- Label -->
-                <span class="hourly-label-primary">{{ item.label.split(' ')[0] }}</span>
-                <span class="hourly-label-secondary">{{ item.label.split(' ')[1] }}</span>
               </div>
             </div>
           </div>
@@ -490,57 +492,30 @@ const donutChartData = computed(() => {
   })
 })
 
-const hourlyIntervals = computed(() => {
-  const counts = {
-    'Mañana (08-11h)': 0,
-    'Mediodía (11-14h)': 0,
-    'Tarde (14-17h)': 0,
-    'Noche (17h+)': 0
-  }
-  
+const specialtyReferences = computed(() => {
+  const map = {}
   todayHistory.value.forEach(item => {
-    if (item.fechaHoraEnvio) {
-      const date = new Date(item.fechaHoraEnvio)
-      const hours = date.getHours()
-      
-      if (hours >= 8 && hours < 11) {
-        counts['Mañana (08-11h)']++
-      } else if (hours >= 11 && hours < 14) {
-        counts['Mediodía (11-14h)']++
-      } else if (hours >= 14 && hours < 17) {
-        counts['Tarde (14-17h)']++
-      } else {
-        counts['Noche (17h+)']++
+    if (item.especialidad) {
+      const spec = item.especialidad.trim() || 'General'
+      if (!map[spec]) {
+        map[spec] = { name: spec, total: 0, sent: 0, failed: 0 }
+      }
+      map[spec].total++
+      if (item.estadoEnvio === 'Enviado') {
+        map[spec].sent++
+      } else if (item.estadoEnvio === 'Error') {
+        map[spec].failed++
       }
     }
   })
   
-  return Object.keys(counts).map(label => ({
-    label,
-    count: counts[label]
-  }))
+  return Object.values(map).sort((a, b) => b.total - a.total)
 })
 
-const maxHourlyCount = computed(() => {
-  const max = Math.max(...hourlyIntervals.value.map(i => i.count), 0)
+const maxSpecialtyReferences = computed(() => {
+  const max = Math.max(...specialtyReferences.value.map(s => s.total), 0)
   return max === 0 ? 1 : max
 })
-
-const getHourlyBarHeight = (count) => {
-  if (totalMessages.value === 0) return 0
-  const max = maxHourlyCount.value
-  return (count / max) * 100
-}
-
-const getHourlyBarColor = (idx) => {
-  const gradients = [
-    'linear-gradient(180deg, #6366f1 0%, #a5b4fc 100%)',
-    'linear-gradient(180deg, #3b82f6 0%, #93c5fd 100%)',
-    'linear-gradient(180deg, #10b981 0%, #6ee7b7 100%)',
-    'linear-gradient(180deg, #f59e0b 0%, #fde68a 100%)'
-  ]
-  return gradients[idx % gradients.length]
-}
 
 // ── Estado de ejecución ───────────────────────────────────────────────────────
 const isProcessing = computed(() =>
@@ -1182,76 +1157,60 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
   color: var(--text-muted);
 }
 
-/* Hourly Bar Chart styling */
-.hourly-bars-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  height: 140px;
-  padding-top: 1.5rem;
-  box-sizing: border-box;
-}
-
-.hourly-bar-column {
+/* Specialty References Chart styling */
+.specialty-bars-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  flex: 1;
-  position: relative;
-  height: 100%;
-  justify-content: flex-end;
+  gap: 0.85rem;
+  max-height: 160px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
-.bar-track-vertical {
-  width: 16px;
-  height: 80%;
+.specialty-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.specialty-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.specialty-name-lbl {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.specialty-count-lbl {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.specialty-bar-track {
+  height: 8px;
   background: rgba(0, 0, 0, 0.05);
   border-radius: 999px;
+  display: flex;
   overflow: hidden;
-  position: relative;
-}
-
-.bar-fill-vertical {
   width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  border-radius: 999px;
-  transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bar-value-bubble {
-  position: absolute;
-  bottom: 82%;
-  background: #1e293b;
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 10;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+.specialty-bar-fill {
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.hourly-bar-column:hover .bar-value-bubble {
-  opacity: 1;
-  transform: translateY(0);
+.fill-sent {
+  background: #10B981;
 }
 
-.hourly-label-primary {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-h);
-  margin-top: 0.4rem;
-}
-
-.hourly-label-secondary {
-  font-size: 0.65rem;
-  color: var(--text-muted);
+.fill-failed {
+  background: #EF4444;
 }
 
 /* Empty charts state styling */
