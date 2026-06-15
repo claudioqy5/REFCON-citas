@@ -40,7 +40,7 @@
         </button>
       </div>
     </nav>
-    <main class="main-content">
+    <main class="main-content" :class="{ 'auth-page-main': !authStore.isAuthenticated }">
       <router-view></router-view>
     </main>
   </div>
@@ -290,6 +290,9 @@ const logout = () => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+.main-content.auth-page-main {
+  padding: 0 !important;
 }
 
 /* Sidebar light overrides for black text readability */

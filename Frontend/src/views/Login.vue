@@ -137,23 +137,27 @@ const handleLogin = async () => {
   background: linear-gradient(135deg, rgba(0, 118, 255, 0.75) 0%, rgba(0, 69, 181, 0.85) 100%), url('../assets/fondologinmedicina.jpg') no-repeat center center / cover;
   padding: 1.5rem;
   box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .login-card-container {
   display: flex;
   width: 100%;
   max-width: 900px;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
   min-height: 520px;
 }
 
 /* Left Pane Style (Blue Spheres Background) */
 .login-left-pane {
   flex: 1;
-  background: linear-gradient(135deg, #0088FF 0%, #0055D4 100%);
+  background: linear-gradient(135deg, rgba(0, 136, 255, 0.55) 0%, rgba(0, 85, 212, 0.65) 100%);
+  backdrop-filter: blur(10px);
   padding: 3rem 2.5rem;
   position: relative;
   overflow: hidden;
@@ -169,6 +173,7 @@ const handleLogin = async () => {
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #00C6FF 0%, #0072FF 60%, #0052D4 100%);
   box-shadow: -10px 10px 30px rgba(0,0,0,0.15), inset -10px -10px 30px rgba(0,0,0,0.3);
+  opacity: 0.85;
 }
 
 .sphere-1 {
@@ -230,7 +235,7 @@ const handleLogin = async () => {
 .login-right-pane {
   width: 460px;
   padding: 3rem 3.5rem;
-  background: #FFFFFF;
+  background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: center;
