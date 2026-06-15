@@ -149,11 +149,6 @@
                 <span class="meta-val">{{ appt.establecimientoDestino }}</span>
               </div>
             </div>
-
-            <div class="appt-message-preview" v-if="appt.cuerpoMensaje">
-              <strong>Mensaje enviado:</strong>
-              <p>{{ appt.cuerpoMensaje }}</p>
-            </div>
           </div>
         </div>
 
