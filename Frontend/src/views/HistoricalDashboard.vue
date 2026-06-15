@@ -69,12 +69,46 @@
           </div>
           <!-- Week filter selector -->
           <div class="week-filter-container">
-            <div class="week-select-wrapper">
-              <select v-model="selectedWeekKey" class="week-select">
-                <option v-for="week in availableWeeks" :key="week.monday.getTime()" :value="week.monday.getTime()">
-                  {{ week.label }}
-                </option>
-              </select>
+            <div class="week-picker-popover-wrapper">
+              <!-- Popover Toggle Button -->
+              <button 
+                @click="showCalendarPopover = !showCalendarPopover" 
+                class="btn-week-picker"
+              >
+                📅 {{ currentWeekRangeLabel }}
+              </button>
+              
+              <!-- Floating Popover -->
+              <div v-if="showCalendarPopover" class="calendar-popover glass-panel">
+                <div class="popover-nav">
+                  <button @click="prevPopoverMonth" class="popover-nav-btn">&larr;</button>
+                  <span class="popover-nav-title">{{ monthNames[popoverMonth] }} {{ popoverYear }}</span>
+                  <button @click="nextPopoverMonth" class="popover-nav-btn">&rarr;</button>
+                </div>
+                
+                <div class="popover-days-header">
+                  <span v-for="d in daysOfWeekShort" :key="d" class="popover-day-lbl">{{ d }}</span>
+                </div>
+                
+                <div class="popover-weeks-container">
+                  <div 
+                    v-for="(week, wIdx) in popoverCells" 
+                    :key="wIdx" 
+                    class="popover-week-row"
+                    :class="{ 'is-selected-week': isWeekSelected(week) }"
+                    @click="selectWeekFromDate(week[0].date)"
+                  >
+                    <div 
+                      v-for="(cell, cIdx) in week" 
+                      :key="cIdx" 
+                      class="popover-day-cell"
+                      :class="{ 'other-month-day': !cell.isCurrentMonth }"
+                    >
+                      {{ cell.day }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -148,6 +182,110 @@ const history = ref([])
 const patients = ref([])
 const establishmentNombre = ref('')
 const selectedWeekKey = ref(null)
+const showCalendarPopover = ref(false)
+const popoverMonth = ref(new Date().getMonth())
+const popoverYear = ref(new Date().getFullYear())
+
+const monthNames = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+]
+const daysOfWeekShort = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+
+const currentWeekRangeLabel = computed(() => {
+  const week = selectedWeekData.value
+  if (!week.monday) return 'Seleccionar Semana'
+  const options = { day: '2-digit', month: '2-digit' }
+  const monStr = week.monday.toLocaleDateString('es-ES', options)
+  const sunStr = week.sunday.toLocaleDateString('es-ES', options)
+  return `Semana del ${monStr} al ${sunStr}`
+})
+
+const getMonday = (d) => {
+  const date = new Date(d)
+  const day = date.getDay()
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+  const monday = new Date(date.getFullYear(), date.getMonth(), diff)
+  monday.setHours(0, 0, 0, 0)
+  return monday
+}
+
+const selectWeekFromDate = (d) => {
+  const mon = getMonday(d)
+  selectedWeekKey.value = mon.getTime()
+  showCalendarPopover.value = false
+}
+
+const prevPopoverMonth = () => {
+  if (popoverMonth.value === 0) {
+    popoverMonth.value = 11
+    popoverYear.value--
+  } else {
+    popoverMonth.value--
+  }
+}
+
+const nextPopoverMonth = () => {
+  if (popoverMonth.value === 11) {
+    popoverMonth.value = 0
+    popoverYear.value++
+  } else {
+    popoverMonth.value++
+  }
+}
+
+const isWeekSelected = (week) => {
+  if (!selectedWeekKey.value) return false
+  const mondayOfThisWeek = getMonday(week[0].date)
+  return mondayOfThisWeek.getTime() === selectedWeekKey.value
+}
+
+const popoverCells = computed(() => {
+  const cells = []
+  const firstDay = new Date(popoverYear.value, popoverMonth.value, 1)
+  const firstDayIndex = firstDay.getDay()
+  const leadingDays = firstDayIndex === 0 ? 6 : firstDayIndex - 1
+  
+  const prevMonthDays = new Date(popoverYear.value, popoverMonth.value, 0).getDate()
+  const currentMonthDays = new Date(popoverYear.value, popoverMonth.value + 1, 0).getDate()
+  
+  // Prev month cells
+  for (let i = leadingDays - 1; i >= 0; i--) {
+    const day = prevMonthDays - i
+    cells.push({
+      day,
+      isCurrentMonth: false,
+      date: new Date(popoverYear.value, popoverMonth.value - 1, day)
+    })
+  }
+  
+  // Current month cells
+  for (let i = 1; i <= currentMonthDays; i++) {
+    cells.push({
+      day: i,
+      isCurrentMonth: true,
+      date: new Date(popoverYear.value, popoverMonth.value, i)
+    })
+  }
+  
+  // Next month cells
+  const total = cells.length
+  const trailing = total % 7 === 0 ? 0 : 7 - (total % 7)
+  for (let i = 1; i <= trailing; i++) {
+    cells.push({
+      day: i,
+      isCurrentMonth: false,
+      date: new Date(popoverYear.value, popoverMonth.value + 1, i)
+    })
+  }
+  
+  // Group cells into arrays of 7 days (weeks!)
+  const weeks = []
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7))
+  }
+  return weeks
+})
 let pollInterval = null
 
 const api = axios.create({
@@ -488,6 +626,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  height: 70vh;
 }
 .chart-card h3 {
   font-size: 1.15rem;
@@ -579,39 +718,127 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.week-select-wrapper {
+/* Week Picker styles */
+.week-picker-popover-wrapper {
   position: relative;
+  display: inline-block;
 }
 
-.week-select {
-  padding: 0.45rem 1.75rem 0.45rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+.btn-week-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   border: 1px solid var(--border-color);
   background: var(--bg-color);
   color: var(--text-main);
-  border-radius: 8px;
-  appearance: none;
+  border-radius: 10px;
   cursor: pointer;
-  outline: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
-.week-select:hover {
+.btn-week-picker:hover {
   border-color: var(--primary-color);
   background: var(--primary-light);
   color: var(--primary-color);
 }
 
-.week-select-wrapper::after {
-  content: '▼';
-  font-size: 0.55rem;
+.calendar-popover {
   position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 110%;
+  right: 0;
+  width: 250px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  z-index: 999;
+}
+
+.popover-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.popover-nav-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
   color: var(--text-muted);
-  pointer-events: none;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.popover-nav-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--primary-color);
+}
+
+.popover-nav-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.popover-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.popover-weeks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popover-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 2px 0;
+}
+
+.popover-week-row:hover {
+  background: var(--primary-light);
+}
+
+.popover-week-row.is-selected-week {
+  background: var(--primary-color);
+}
+
+.popover-day-cell {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+  padding: 0.25rem 0;
+}
+
+.popover-week-row:hover .popover-day-cell {
+  color: var(--primary-color);
+}
+
+.popover-week-row.is-selected-week .popover-day-cell {
+  color: #FFFFFF;
+}
+
+.other-month-day {
+  opacity: 0.35;
 }
 
 .chart-title-col {

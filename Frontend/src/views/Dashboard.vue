@@ -11,6 +11,15 @@
           <div class="welcome-date">
             <span class="calendar-icon">📅</span> {{ currentDateText }}
           </div>
+          <!-- Premium Date Picker Filter -->
+          <div class="dashboard-date-filter">
+            <span class="filter-lbl">Ver otro día:</span>
+            <input 
+              type="date" 
+              v-model="selectedDateInput"
+              class="dashboard-date-input"
+            />
+          </div>
         </div>
       </div>
 
@@ -411,23 +420,39 @@ const saveCredentials = async () => {
 }
 
 
-const isDateToday = (dateStr) => {
-  if (!dateStr) return false
-  const date = new Date(dateStr)
-  const today = new Date()
-  return date.getFullYear() === today.getFullYear() &&
-         date.getMonth() === today.getMonth() &&
-         date.getDate() === today.getDate()
-}
+const selectedDate = ref(new Date())
 
-// Filter history for today
-const todayHistory = computed(() => {
-  return history.value.filter(m => isDateToday(m.fechaHoraEnvio))
+const selectedDateInput = computed({
+  get() {
+    const yyyy = selectedDate.value.getFullYear()
+    const mm = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
+    const dd = String(selectedDate.value.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+  },
+  set(val) {
+    if (val) {
+      const parts = val.split('-')
+      selectedDate.value = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+    }
+  }
 })
 
-// Metrics computation filtered by today
+const isSameDay = (dateStr, targetDate) => {
+  if (!dateStr || !targetDate) return false
+  const date = new Date(dateStr)
+  return date.getFullYear() === targetDate.getFullYear() &&
+         date.getMonth() === targetDate.getMonth() &&
+         date.getDate() === targetDate.getDate()
+}
+
+// Filter history for selected date
+const todayHistory = computed(() => {
+  return history.value.filter(m => isSameDay(m.fechaHoraEnvio, selectedDate.value))
+})
+
+// Metrics computation filtered by selected date
 const totalPatients = computed(() => {
-  // Extract unique patients who had messages today
+  // Extract unique patients who had messages on selected date
   const uniquePatients = new Set(todayHistory.value.map(m => m.pacienteNombre || m.pacienteID))
   return uniquePatients.size
 })
@@ -437,7 +462,7 @@ const failedMessages = computed(() => todayHistory.value.filter(m => m.estadoEnv
 
 const currentDateText = computed(() => {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
-  const dateStr = new Date().toLocaleDateString('es-ES', options)
+  const dateStr = selectedDate.value.toLocaleDateString('es-ES', options)
   return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 })
 
@@ -753,6 +778,35 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 
 .calendar-icon {
   font-size: 0.95rem;
+}
+
+/* Premium Date Picker Filter */
+.dashboard-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-light);
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.05);
+}
+
+.filter-lbl {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.dashboard-date-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-h);
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* Premium Action Control in Header */
