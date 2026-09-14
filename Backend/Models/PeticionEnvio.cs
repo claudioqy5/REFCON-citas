@@ -20,6 +20,7 @@ namespace Backend.Models
         public int? TotalPacientesNuevos { get; set; }  // cuántos había para enviar
         public int? TotalEnviados { get; set; }          // cuántos se enviaron OK
         public int? TotalErrores { get; set; }           // cuántos fallaron
+        public int? TotalVencidas { get; set; }          // cuántos tenían cita vencida (no se envió WhatsApp)
 
         // ── Detalle de error (si el flujo falló en una etapa crítica) ────────
         public string? MensajeError { get; set; }

@@ -216,6 +216,8 @@ namespace Backend.Controllers
             // 5. Actualizar contadores en la petición
             if (dto.EstadoEnvio == "Enviado")
                 peticion.TotalEnviados = (peticion.TotalEnviados ?? 0) + 1;
+            else if (dto.EstadoEnvio == "Vencida")
+                peticion.TotalVencidas = (peticion.TotalVencidas ?? 0) + 1;
             else
                 peticion.TotalErrores = (peticion.TotalErrores ?? 0) + 1;
 

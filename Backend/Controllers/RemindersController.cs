@@ -163,6 +163,7 @@ namespace Backend.Controllers
                     peticion.TotalPacientesNuevos,
                     peticion.TotalEnviados,
                     peticion.TotalErrores,
+                    peticion.TotalVencidas,
                     peticion.MensajeError,
                     peticion.EtapaError
                 }
@@ -199,6 +200,43 @@ namespace Backend.Controllers
                 .ToListAsync();
 
             return Ok(historial);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // GET /api/reminders/vencidas
+        // Devuelve todos los registros del historial con EstadoEnvio = "Vencida".
+        // Útil para que el personal vea los pacientes cuya cita ya pasó y deba reprogramarse.
+        // Aislamiento SaaS: cada establecimiento solo ve sus propios registros.
+        // ─────────────────────────────────────────────────────────────────────
+        [HttpGet("vencidas")]
+        public async Task<IActionResult> GetVencidas()
+        {
+            int establecimientoId = GetEstablecimientoID();
+
+            var vencidas = await _context.HistorialMensajes
+                .Include(h => h.Paciente)
+                .Where(h => h.EstablecimientoID == establecimientoId && h.EstadoEnvio == "Vencida")
+                .OrderByDescending(h => h.FechaHoraEnvio)
+                .Select(h => new
+                {
+                    h.MensajeID,
+                    h.PeticionID,
+                    h.IdCita,
+                    h.IdReferencia,
+                    PacienteNombre = h.Paciente.NombreCompleto,
+                    PacienteDni = h.Paciente.Dni,
+                    PacienteCelular = h.Paciente.Celular,
+                    h.Especialidad,
+                    h.FechaCita,
+                    FechaDeteccion = h.FechaHoraEnvio,
+                    h.EstablecimientoDestino,
+                    h.Consultorio,
+                    h.Medico,
+                    EstablecimientoNombre = h.Establecimiento.NombreEstablecimiento
+                })
+                .ToListAsync();
+
+            return Ok(vencidas);
         }
 
         [HttpGet("patients")]

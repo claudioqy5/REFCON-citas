@@ -3,6 +3,7 @@ import Login from '../views/Login.vue'
 import Dashboard from '../views/Dashboard.vue'
 import History from '../views/History.vue'
 import Pacientes from '../views/Pacientes.vue'
+import CitasVencidas from '../views/CitasVencidas.vue'
 import { useAuthStore } from '../stores/auth'
 
 import AdminEstablecimientos from '../views/AdminEstablecimientos.vue'
@@ -44,6 +45,12 @@ const router = createRouter({
       path: '/calendar',
       name: 'calendar',
       component: () => import('../views/Calendar.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/expired-appointments',
+      name: 'expired-appointments',
+      component: CitasVencidas,
       meta: { requiresAuth: true }
     },
     {

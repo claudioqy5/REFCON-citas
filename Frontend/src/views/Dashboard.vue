@@ -95,6 +95,14 @@
           <span class="metric-value">{{ failedMessages }}</span>
         </div>
       </div>
+
+      <div class="metric-card glass-panel">
+        <div class="metric-icon bg-amber-light">🗓️</div>
+        <div class="metric-info">
+          <span class="metric-label">Citas Vencidas</span>
+          <span class="metric-value">{{ expiredMessages }}</span>
+        </div>
+      </div>
     </div>
 
     <!-- 2. MAIN CONTENT GRID (Actions & Charts) -->
@@ -153,6 +161,9 @@
           <div v-if="lastPeticion && (currentStatus === 'Completado' || currentStatus === 'Error')" class="exec-counters">
             <div class="counter-chip chip-sent">
               <span>✅</span> {{ lastPeticion.totalEnviados ?? 0 }} enviados
+            </div>
+            <div class="counter-chip chip-expired" v-if="(lastPeticion.totalVencidas ?? 0) > 0">
+              <span>🗓️</span> {{ lastPeticion.totalVencidas }} vencidas
             </div>
             <div class="counter-chip chip-error" v-if="(lastPeticion.totalErrores ?? 0) > 0">
               <span>❌</span> {{ lastPeticion.totalErrores }} errores
@@ -452,13 +463,14 @@ const todayHistory = computed(() => {
 
 // Metrics computation filtered by selected date
 const totalPatients = computed(() => {
-  // Extract unique patients who had messages on selected date
-  const uniquePatients = new Set(todayHistory.value.map(m => m.pacienteNombre || m.pacienteID))
+  // Extract unique patients who had messages on selected date (exclude Vencida)
+  const uniquePatients = new Set(todayHistory.value.filter(m => m.estadoEnvio !== 'Vencida').map(m => m.pacienteNombre || m.pacienteID))
   return uniquePatients.size
 })
-const totalMessages = computed(() => todayHistory.value.length)
+const totalMessages = computed(() => todayHistory.value.filter(m => m.estadoEnvio !== 'Vencida').length)
 const successfulMessages = computed(() => todayHistory.value.filter(m => m.estadoEnvio === 'Enviado').length)
 const failedMessages = computed(() => todayHistory.value.filter(m => m.estadoEnvio === 'Error').length)
+const expiredMessages = computed(() => todayHistory.value.filter(m => m.estadoEnvio === 'Vencida').length)
 
 const currentDateText = computed(() => {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
@@ -1052,6 +1064,7 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 .bg-blue-light { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
 .bg-green-light { background: rgba(16, 185, 129, 0.1); color: #10B981; }
 .bg-red-light { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+.bg-amber-light { background: rgba(245, 158, 11, 0.1); color: #D97706; }
 
 .metric-info {
   display: flex;
@@ -1418,6 +1431,7 @@ onUnmounted(() => { if (pollInterval) clearInterval(pollInterval) })
 .chip-sent  { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: #065F46; }
 .chip-error { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); color: #991B1B; }
 .chip-total { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.3); color: var(--primary-color); }
+.chip-expired { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); color: #92400E; }
 
 /* Error detail */
 .error-detail {

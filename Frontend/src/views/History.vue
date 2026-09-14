@@ -32,7 +32,8 @@
             <select v-model="statusFilter" class="status-select">
               <option value="">Todos</option>
               <option value="Enviado">Enviado</option>
-              <option value="Fallido">Fallido</option>
+              <option value="Error">Error</option>
+              <option value="Vencida">Vencida</option>
             </select>
           </div>
           <div class="filter-item action-item">
@@ -169,22 +170,34 @@
           
           <!-- Message Preview inside a mockup phone -->
           <div class="message-preview-section">
-            <h4>Mensaje Enviado al Paciente</h4>
-            <div class="phone-mockup">
-              <div class="phone-header">
-                <div class="phone-avatar">🩺</div>
-                <div class="phone-chat-info">
-                  <span class="phone-chat-name">Bot mensajería REFCON</span>
-                  <span class="phone-chat-status">en línea</span>
-                </div>
-              </div>
-              <div class="phone-body">
-                <div class="chat-bubble received">
-                  <p class="formatted-message">{{ getDynamicMessage(selectedItem) }}</p>
-                  <span class="chat-time">{{ formatTimeOnly(selectedItem.fechaHoraEnvio) }}</span>
-                </div>
+            <!-- Vencida banner in place of message preview -->
+            <div v-if="selectedItem.estadoEnvio === 'Vencida'" class="vencida-banner">
+              <div class="vencida-icon">🗓️</div>
+              <div class="vencida-text">
+                <h4>⚠️ Cita Vencida</h4>
+                <p>La fecha de la cita del paciente ya pasó o es el día de hoy. <strong>No se envió mensaje de WhatsApp.</strong></p>
+                <p class="vencida-hint">Por favor, contacté al paciente o reprograme la cita en el sistema correspondiente.</p>
               </div>
             </div>
+            <!-- Normal message preview -->
+            <template v-else>
+              <h4>Mensaje Enviado al Paciente</h4>
+              <div class="phone-mockup">
+                <div class="phone-header">
+                  <div class="phone-avatar">🩺</div>
+                  <div class="phone-chat-info">
+                    <span class="phone-chat-name">Bot mensajería REFCON</span>
+                    <span class="phone-chat-status">en línea</span>
+                  </div>
+                </div>
+                <div class="phone-body">
+                  <div class="chat-bubble received">
+                    <p class="formatted-message">{{ getDynamicMessage(selectedItem) }}</p>
+                    <span class="chat-time">{{ formatTimeOnly(selectedItem.fechaHoraEnvio) }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -343,7 +356,8 @@ const formatDate = (dateString) => {
 
 const getStatusBadge = (status) => {
   if (status === 'Enviado') return 'badge-success'
-  if (status === 'Fallido') return 'badge-danger'
+  if (status === 'Error' || status === 'Fallido') return 'badge-danger'
+  if (status === 'Vencida') return 'badge-vencida'
   return 'badge-warning'
 }
 
@@ -468,6 +482,11 @@ tr:hover td {
 .badge-warning {
   background: rgba(245, 158, 11, 0.2);
   color: #F59E0B;
+}
+.badge-vencida {
+  background: rgba(245, 158, 11, 0.15);
+  color: #B45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 /* Action button inside table (Premium Glassmorphic Pill) */
@@ -845,5 +864,38 @@ tr:hover td {
   width: 40px;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* Vencida Banner styles */
+.vencida-banner {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(251,191,36,0.05) 100%);
+  border: 1.5px solid rgba(245,158,11,0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+.vencida-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.vencida-text h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400E;
+  margin: 0 0 0.5rem 0;
+}
+.vencida-text p {
+  font-size: 0.87rem;
+  color: #78350F;
+  margin: 0 0 0.4rem 0;
+}
+.vencida-hint {
+  font-size: 0.8rem;
+  color: #B45309;
+  font-style: italic;
 }
 </style>

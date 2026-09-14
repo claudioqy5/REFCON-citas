@@ -27,6 +27,10 @@
           <span class="link-icon">📜</span>
           <span class="link-text">Historial</span>
         </router-link>
+        <router-link to="/expired-appointments">
+          <span class="link-icon">🗓️</span>
+          <span class="link-text">Citas Vencidas</span>
+        </router-link>
         
         <template v-if="authStore.isAdmin">
           <div class="divider"></div>
