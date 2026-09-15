@@ -331,7 +331,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const s0 = $('Paso 0: Inicializar').first().json.headers['set-cookie'] || [];\nconst s1 = $('Paso 1: VALIDARLOGIN').first().json.headers['set-cookie'] || [];\n\nconst map = {};\n[...s0, ...s1].forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ') } }];"
+        "jsCode": "\nconst s0 = $('Paso 0: Inicializar').first().json.headers['set-cookie'] || [];\nconst s1 = $('Paso 1: VALIDARLOGIN').first().json.headers['set-cookie'] || [];\n\nconst map = {};\n[...s0, ...s1].forEach(c => {\n  const raw = c.split(';')[0];\n  const eq = raw.indexOf('=');\n  if (eq > 0) {\n    map[raw.substring(0, eq).trim()] = raw.substring(eq + 1).trim();\n  }\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => k+'='+v).join('; ') } }];\n"
       },
       "id": "b91e4bc3-763a-4b8d-9100-1d3813cc830e",
       "name": "Acumular Cookies A",
@@ -414,7 +414,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const prev = $('Acumular Cookies A').first().json.cookies;\nconst s2 = $('Paso 2: LOGIN INIT').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprev.split('; ').forEach(c => { const p = c.split('='); if(p.length>=2) map[p[0]] = p[1]; });\ns2.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ');\nreturn [{ json: { cookieString, hasByt: !!map['byt'] } }];"
+        "jsCode": "\nconst prevStr = $('Acumular Cookies A').first().json.cookies;\nconst s2 = $('Paso 2: LOGIN INIT').first().json.headers['set-cookie'] || [];\n\nconst map = {};\n// Parse pre-built cookie string\nprevStr.split('; ').forEach(c => {\n  const eq = c.indexOf('=');\n  if (eq > 0) {\n    map[c.substring(0, eq).trim()] = c.substring(eq + 1).trim();\n  }\n});\n// Parse Set-Cookie headers from Paso 2\ns2.forEach(c => {\n  const raw = c.split(';')[0];\n  const eq = raw.indexOf('=');\n  if (eq > 0) {\n    map[raw.substring(0, eq).trim()] = raw.substring(eq + 1).trim();\n  }\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => k+'='+v).join('; ');\nconst hasByt = !!map['byt'];\nreturn [{ json: { cookieString, hasByt } }];\n"
       },
       "id": "5feb29a8-31f0-4b16-8a1f-cb611b27ce7c",
       "name": "Verificar Byt Final",
@@ -1096,7 +1096,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://backend:8080/api/email/get-2fa-code",
+        "url": "https://refconcitas.helifyferdigital.cloud/api/email/get-2fa-code",
         "sendHeaders": false,
         "sendBody": false,
         "options": {}
@@ -1113,7 +1113,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "\nconst response = $input.item.json;\nif (!response.success) {\n  throw new Error('No se pudo leer el correo o encontrar código: ' + (response.message || JSON.stringify(response)));\n}\nconst codigoExtraido = response.code;\n\n// Usar el cookieString acumulado hasta Verificar Byt Final\nconst cookiesFor2FA = $('Verificar Byt Final').first().json.cookieString;\n\nreturn { json: { ...$input.item.json, codigoExtraido, cookiesFor2FA } };\n"
+        "jsCode": "\nconst response = $input.item.json;\nif (!response.success) {\n  throw new Error('No se pudo leer el correo: ' + (response.message || JSON.stringify(response)));\n}\nconst codigoExtraido = response.code;\n\n// Get cookieString from Esperar 20s Correo (which carried it from Verificar Byt Final)\nconst cookiesFor2FA = $('Esperar 20s Correo').first().json.cookieString;\n\nreturn { json: { ...response, codigoExtraido, cookiesFor2FA } };\n"
       },
       "id": "node-extract-code",
       "name": "Extraer Codigo 2FA",
@@ -1133,7 +1133,7 @@
           "parameters": [
             {
               "name": "Cookie",
-              "value": "={{ $json.cookiesFor2FA }}"
+              "value": "={{ $('Extraer Codigo 2FA').first().json.cookiesFor2FA }}"
             },
             {
               "name": "Content-Type",
@@ -1191,7 +1191,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Combinar cookies previas + cookies de la respuesta del VALIDARCODIGO\nconst prevCookieString = $('Verificar Byt Final').first().json.cookieString;\nconst s1_5 = $('Paso 1.5: Enviar Codigo 2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprevCookieString.split('; ').forEach(c => {\n  const p = c.split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\ns1_5.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ') } }];\n"
+        "jsCode": "\nconst prevStr = $('Extraer Codigo 2FA').first().json.cookiesFor2FA;\nconst s1_5 = $('Paso 1.5: Enviar Codigo 2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprevStr.split('; ').forEach(c => {\n  const eq = c.indexOf('=');\n  if (eq > 0) {\n    map[c.substring(0, eq).trim()] = c.substring(eq + 1).trim();\n  }\n});\ns1_5.forEach(c => {\n  const raw = c.split(';')[0];\n  const eq = raw.indexOf('=');\n  if (eq > 0) {\n    map[raw.substring(0, eq).trim()] = raw.substring(eq + 1).trim();\n  }\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => k+'='+v).join('; ') } }];\n"
       },
       "id": "node-accum-post2fa",
       "name": "Acumular Cookies Post-2FA",
@@ -1274,7 +1274,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Combinar cookies post-2FA + respuesta de LOGIN INIT post-2FA\nconst prev = $('Acumular Cookies Post-2FA').first().json.cookies;\nconst sLogin = $('Paso 2.1: LOGIN INIT Post-2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprev.split('; ').forEach(c => {\n  const p = c.split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\nsLogin.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ');\nreturn [{ json: { cookieString, hasByt: !!map['byt'] } }];\n"
+        "jsCode": "\nconst prevStr = $('Acumular Cookies Post-2FA').first().json.cookies;\nconst sLogin = $('Paso 2.1: LOGIN INIT Post-2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprevStr.split('; ').forEach(c => {\n  const eq = c.indexOf('=');\n  if (eq > 0) {\n    map[c.substring(0, eq).trim()] = c.substring(eq + 1).trim();\n  }\n});\nsLogin.forEach(c => {\n  const raw = c.split(';')[0];\n  const eq = raw.indexOf('=');\n  if (eq > 0) {\n    map[raw.substring(0, eq).trim()] = raw.substring(eq + 1).trim();\n  }\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => k+'='+v).join('; ');\nconst hasByt = !!map['byt'];\nreturn [{ json: { cookieString, hasByt } }];\n"
       },
       "id": "node-verify-post2fa",
       "name": "Verificar Byt Post-2FA",
