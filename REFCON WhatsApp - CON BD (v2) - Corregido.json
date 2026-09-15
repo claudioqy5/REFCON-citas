@@ -1044,6 +1044,246 @@
       ],
       "executeOnce": true,
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "chk-byt",
+              "leftValue": "={{ $json.hasByt }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-has-byt",
+      "name": "¿Tiene Byt Cookie?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        2350
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "node-wait-email",
+      "name": "Esperar 20s Correo",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        2550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://backend:8080/api/email/get-2fa-code",
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {}
+      },
+      "id": "node-read-email",
+      "name": "Leer Correo Gmail 2FA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1824,
+        2550
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst response = $input.item.json;\nif (!response.success) {\n  throw new Error('No se pudo leer el correo o encontrar código: ' + (response.message || JSON.stringify(response)));\n}\nconst codigoExtraido = response.code;\n\n// Usar el cookieString acumulado hasta Verificar Byt Final\nconst cookiesFor2FA = $('Verificar Byt Final').first().json.cookieString;\n\nreturn { json: { ...$input.item.json, codigoExtraido, cookiesFor2FA } };\n"
+      },
+      "id": "node-extract-code",
+      "name": "Extraer Codigo 2FA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        2550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refcon.minsa.gob.pe/refconv02/desktop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookiesFor2FA }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "C",
+              "value": "VALIDARLOGIN"
+            },
+            {
+              "name": "S",
+              "value": "VALIDARCODIGO"
+            },
+            {
+              "name": "mlkuser",
+              "value": "={{ $('Set Manual Config').item.json.usuarioReferencial || $('Config').item.json.usuarioReferencial }}"
+            },
+            {
+              "name": "mlkcodigo",
+              "value": "={{ $json.codigoExtraido }}"
+            }
+          ]
+        },
+        "options": {
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321",
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "node-send-2fa-code",
+      "name": "Paso 1.5: Enviar Codigo 2FA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2208,
+        2550
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combinar cookies previas + cookies de la respuesta del VALIDARCODIGO\nconst prevCookieString = $('Verificar Byt Final').first().json.cookieString;\nconst s1_5 = $('Paso 1.5: Enviar Codigo 2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprevCookieString.split('; ').forEach(c => {\n  const p = c.split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\ns1_5.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nreturn [{ json: { cookies: Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ') } }];\n"
+      },
+      "id": "node-accum-post2fa",
+      "name": "Acumular Cookies Post-2FA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        2550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://refcon.minsa.gob.pe/refconv02/desktop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "C",
+              "value": "LOGIN"
+            },
+            {
+              "name": "S",
+              "value": "INIT"
+            },
+            {
+              "name": "_dcp"
+            },
+            {
+              "name": "mlkuser",
+              "value": "={{ $('Set Manual Config').item.json.usuarioReferencial || $('Config').item.json.usuarioReferencial }}"
+            },
+            {
+              "name": "mlkpass",
+              "value": "={{ $('Set Manual Config').item.json.claveReferencial || $('Config').item.json.claveReferencial }}"
+            },
+            {
+              "name": "mlkEESS"
+            }
+          ]
+        },
+        "options": {
+          "proxy": "=http://wuj8ixam5dlLeh9a:yapWzxKm1Z3E3WbB_country-pe_city-lima_session-{{ $('Crear Peticion BD').first().json.peticionId ? $('Crear Peticion BD').first().json.peticionId : 'pruebas' }}_lifetime-15m@geo.iproyal.com:12321",
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "node-login-post2fa",
+      "name": "Paso 2.1: LOGIN INIT Post-2FA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2592,
+        2550
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combinar cookies post-2FA + respuesta de LOGIN INIT post-2FA\nconst prev = $('Acumular Cookies Post-2FA').first().json.cookies;\nconst sLogin = $('Paso 2.1: LOGIN INIT Post-2FA').first().json.headers['set-cookie'] || [];\n\nconst map = {};\nprev.split('; ').forEach(c => {\n  const p = c.split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\nsLogin.forEach(c => {\n  const p = c.split(';')[0].split('=');\n  if(p.length >= 2) map[p[0].trim()] = p.slice(1).join('=').trim();\n});\n\nconst cookieString = Object.entries(map).map(([k,v]) => `${k}=${v}`).join('; ');\nreturn [{ json: { cookieString, hasByt: !!map['byt'] } }];\n"
+      },
+      "id": "node-verify-post2fa",
+      "name": "Verificar Byt Post-2FA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2784,
+        2550
+      ]
     }
   ],
   "pinData": {},
@@ -1169,7 +1409,7 @@
       "main": [
         [
           {
-            "node": "Obtener Pacientes",
+            "node": "¿Tiene Byt Cookie?",
             "type": "main",
             "index": 0
           }
@@ -1346,6 +1586,101 @@
         [
           {
             "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Tiene Byt Cookie?": {
+      "main": [
+        [
+          {
+            "node": "Obtener Pacientes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Esperar 20s Correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 20s Correo": {
+      "main": [
+        [
+          {
+            "node": "Leer Correo Gmail 2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Correo Gmail 2FA": {
+      "main": [
+        [
+          {
+            "node": "Extraer Codigo 2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Codigo 2FA": {
+      "main": [
+        [
+          {
+            "node": "Paso 1.5: Enviar Codigo 2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paso 1.5: Enviar Codigo 2FA": {
+      "main": [
+        [
+          {
+            "node": "Acumular Cookies Post-2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acumular Cookies Post-2FA": {
+      "main": [
+        [
+          {
+            "node": "Paso 2.1: LOGIN INIT Post-2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paso 2.1: LOGIN INIT Post-2FA": {
+      "main": [
+        [
+          {
+            "node": "Verificar Byt Post-2FA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Byt Post-2FA": {
+      "main": [
+        [
+          {
+            "node": "Obtener Pacientes",
             "type": "main",
             "index": 0
           }

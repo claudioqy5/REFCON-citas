@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ADMIN\\Desktop\\MIS PROYECTOS\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj": {}
+    "C:\\Users\\PC-37\\Desktop\\PROYECTOS CFQY\\VENTASSAAS\\REFCON\\REFCON-citas\\Backend\\Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ADMIN\\Desktop\\MIS PROYECTOS\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj": {
+    "C:\\Users\\PC-37\\Desktop\\PROYECTOS CFQY\\VENTASSAAS\\REFCON\\REFCON-citas\\Backend\\Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ADMIN\\Desktop\\MIS PROYECTOS\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj",
+        "projectUniqueName": "C:\\Users\\PC-37\\Desktop\\PROYECTOS CFQY\\VENTASSAAS\\REFCON\\REFCON-citas\\Backend\\Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "C:\\Users\\ADMIN\\Desktop\\MIS PROYECTOS\\REFCON-citas\\REFCON-citas\\Backend\\Backend.csproj",
-        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ADMIN\\Desktop\\MIS PROYECTOS\\REFCON-citas\\REFCON-citas\\Backend\\obj\\",
+        "projectPath": "C:\\Users\\PC-37\\Desktop\\PROYECTOS CFQY\\VENTASSAAS\\REFCON\\REFCON-citas\\Backend\\Backend.csproj",
+        "packagesPath": "C:\\Users\\PC-37\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC-37\\Desktop\\PROYECTOS CFQY\\VENTASSAAS\\REFCON\\REFCON-citas\\Backend\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\PC-37\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,9 +36,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
+          "auditMode": "all"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -54,6 +47,10 @@
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[4.0.3, )"
+            },
+            "MailKit": {
+              "target": "Package",
+              "version": "[4.18.0, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -91,7 +88,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100-rc.1.24452.12/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
